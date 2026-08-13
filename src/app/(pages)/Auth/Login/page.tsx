@@ -1,5 +1,4 @@
 "use client";
-import { useHandleInput } from "@/app/hooks/getHandleInput";
 import FloatingLabel from "@/components/global/floatingLabel/content";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,10 +10,9 @@ import {
 } from "@/components/ui/select";
 import FormAuth from "@/layout/formAuth/content";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AtSign, Book, GraduationCap, KeyRound } from "lucide-react";
+import { AtSign, Book, GraduationCap, KeyRound, Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -28,10 +26,10 @@ const inputLoginSchema = z.object({
 type InputLogin = z.infer<typeof inputLoginSchema>;
 
 export default function LoginAccount() {
+  const { push } = useRouter();
   const {
     control,
     register,
-    watch,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<InputLogin>({
@@ -39,61 +37,42 @@ export default function LoginAccount() {
   });
 
   async function onSubmit(data: InputLogin) {
-    console.log(data);
-  }
+    const payload = {
+      valueEmail: data.email,
+      valuePassword: data.password,
+      valueTypeAccount: data.typeAccount,
+    };
 
-  const { push } = useRouter();
-  const [valueTypeAccount, setValueTypeAccount] = useState<string>("");
-  const { formMustFilled, handleValueInput, isFormFilled } = useHandleInput({
-    email: "",
-    password: "",
-  });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  async function handleLogin(e: any) {
-    e.preventDefault();
     try {
-      setIsLoading(true);
       const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          valueEmail: e.currentTarget.email.value,
-          valuePassword: e.currentTarget.password.value,
-          valueTypeAccount: valueTypeAccount,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const dataLogin = await response.json();
 
-      if (valueTypeAccount !== "") {
-        if (dataLogin.success) {
-          if (dataLogin.tipe === "siswa") {
-            push("/Student/Dashboard");
-            toast("Berhasil ✅", {
-              description: dataLogin.message,
-            });
-          } else {
-            push("/Teacher/dashboard");
-            toast("Berhasil ✅", {
-              description: dataLogin.message,
-            });
-          }
-        } else {
-          toast("Gagal ❌", {
-            description: dataLogin.message,
-          });
-        }
-      } else {
+      if (!dataLogin.success) {
         toast("Gagal ❌", {
-          description: "Jenis Akun Belum Dipilih",
+          description: dataLogin.message,
+        });
+      }
+
+      if (dataLogin.tipe === "siswa") {
+        push("/Student/Dashboard");
+        toast("Berhasil ✅", {
+          description: dataLogin.message,
+        });
+      } else {
+        push("/Teacher/dashboard");
+        toast("Berhasil ✅", {
+          description: dataLogin.message,
         });
       }
     } catch (err) {
-      setIsLoading(false);
-      console.error("gagal login", err);
-    } finally {
-      setIsLoading(false);
+      toast("Gagal ❌", {
+        description: "Error fetch api",
+      });
     }
   }
 
@@ -152,9 +131,14 @@ export default function LoginAccount() {
         {/* Login Button */}
         <Button
           variant="outline"
+          type="submit"
           className="bg-blue-400 rounded-md h-10 mt-3 text-slate-50 tracking-wide font-semibold cursor-pointer"
         >
-          Masuk ke Akun
+          {isSubmitting ? (
+            <Loader2 className="size-5 animate-spin" />
+          ) : (
+            "Masuk ke Akun"
+          )}
         </Button>
       </form>
 

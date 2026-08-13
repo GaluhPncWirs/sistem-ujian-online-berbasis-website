@@ -1,13 +1,18 @@
 "use client";
 import { useRandomId } from "@/app/hooks/getRandomId";
-import { useHandleInput } from "@/app/hooks/getHandleInput";
 import { supabase } from "@/lib/supabase/data";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import FormAuth from "@/layout/formAuth/content";
 import FloatingLabel from "@/components/global/floatingLabel/content";
-import { AtSign, KeyRound, Repeat, School, UserRound } from "lucide-react";
+import {
+  AtSign,
+  KeyRound,
+  Loader2,
+  Repeat,
+  School,
+  UserRound,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -38,6 +43,7 @@ const inputRegisterSchema = z
 type InputRegister = z.infer<typeof inputRegisterSchema>;
 
 export default function RegisterAccount() {
+  const { push } = useRouter();
   const {
     control,
     register,
@@ -48,82 +54,59 @@ export default function RegisterAccount() {
     resolver: zodResolver(inputRegisterSchema),
   });
 
-  console.log(errors);
-
   async function onSubmit(data: InputRegister) {
-    console.log(data);
-  }
-
-  const [clearForm, setClearForm] = useState(false);
-  const { formMustFilled, setFormMustFilled, handleValueInput, isFormFilled } =
-    useHandleInput({
-      fullname: "",
-      kelas: "",
-      email: "",
-      password: "",
-    });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { push } = useRouter();
-
-  async function handleRegister(e: any) {
-    e.preventDefault();
     const dataRegister = {
-      fullName: e.target.fullname.value,
-      classes: e.target.kelas.value,
-      email: e.target.email.value,
-      password: e.target.password.value,
+      fullName: data.nama,
+      classes: data.kelas,
+      email: data.email,
+      password: data.password,
       role: "pelajar",
       idStudent: useRandomId(7, "STD"),
       typeAccount: "default",
     };
     try {
-      setIsLoading(true);
-      const { data, error }: any = await supabase
+      const { data: existingAccount, error: checkError } = await supabase
         .from("account-student")
         .select("email")
-        .eq("email", e.target.email.value)
-        .single();
-      if (data) {
-        toast("Gagal ❌", {
-          description: "Nama Email Sudah Ada. Buat kembali Yang Berbeda",
-        });
-        setClearForm(true);
-      } else if (error) {
-        toast("Data Gagal Diload");
-      } else {
-        const { error }: any = await supabase
-          .from("account-student")
-          .insert(dataRegister);
-        if (error) {
-          toast("Gagal ❌", {
-            description: "Gagal Membuat Akun",
-          });
-        } else {
-          setIsLoading(true);
-          push("/Autentikasi/Login");
-          toast("Berhasil ✅", {
-            description: "Berhasil Membuat Akun Silahkan Kembali Ke Form Login",
-          });
-        }
-      }
-    } catch (err) {
-      setIsLoading(false);
-      console.error("gagal register", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+        .eq("email", data.email)
+        .limit(1);
 
-  useEffect(() => {
-    if (clearForm) {
-      setFormMustFilled({
-        fullname: "",
-        kelas: "",
-        email: "",
-        password: "",
+      if (checkError) {
+        toast("Gagal ❌", {
+          description: "Terjadi kesalahan saat mengecek email",
+        });
+        return;
+      }
+
+      if (existingAccount.length > 0) {
+        toast("Gagal ❌", {
+          description: "Email sudah terdaftar. Gunakan email yang berbeda.",
+        });
+        return;
+      }
+
+      const { error: insertError } = await supabase
+        .from("account-student")
+        .insert(dataRegister);
+
+      if (insertError) {
+        toast("Gagal ❌", {
+          description: "Gagal membuat akun",
+        });
+        return;
+      }
+
+      push("/Auth/Login");
+
+      toast("Berhasil ✅", {
+        description: "Berhasil membuat akun. Silakan login.",
+      });
+    } catch (err) {
+      toast("Gagal ❌", {
+        description: "Error fetch api",
       });
     }
-  }, [clearForm]);
+  }
 
   return (
     <FormAuth formTitle={"Buat Akun"}>
@@ -187,9 +170,14 @@ export default function RegisterAccount() {
 
         <Button
           variant="outline"
+          type="submit"
           className="bg-blue-400 rounded-md h-10 mt-3 text-slate-50 tracking-wide font-semibold cursor-pointer"
         >
-          Buat Akun
+          {isSubmitting ? (
+            <Loader2 className="size-5 animate-spin" />
+          ) : (
+            "Buat Akun"
+          )}
         </Button>
       </form>
     </FormAuth>
