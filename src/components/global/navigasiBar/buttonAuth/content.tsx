@@ -21,9 +21,9 @@ export default function ButtonAutentications() {
       {getidUsers ? (
         <Dialog>
           <DialogTrigger asChild>
-            <button className="bg-blue-400 hover:bg-blue-500 hover:text-slate-200 py-1.5 px-5 rounded-lg cursor-pointer font-semibold text-lg">
+            <Button className="bg-blue-400 hover:bg-blue-500 hover:text-slate-200 py-1.5 px-5 rounded-lg cursor-pointer font-semibold text-lg">
               Logout
-            </button>
+            </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -47,13 +47,13 @@ export default function ButtonAutentications() {
         <>
           <Link
             href="/Auth/Daftar"
-            className="border border-blue-600 hover:text-blue-500 py-1.5 px-5 rounded-md cursor-pointer font-semibold text-lg"
+            className="border border-blue-600 hover:text-blue-500 py-1.5 px-5 rounded-md cursor-pointer font-semibold"
           >
             Daftar
           </Link>
           <Link
             href="/Auth/Login"
-            className="bg-blue-500 hover:bg-blue-600 py-1.5 px-5 rounded-lg cursor-pointer font-semibold text-lg text-white"
+            className="border-white border bg-blue-500 hover:bg-blue-400 py-1.5 px-5 rounded-lg cursor-pointer font-semibold text-white"
           >
             Login
           </Link>

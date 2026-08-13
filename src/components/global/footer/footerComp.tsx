@@ -3,143 +3,120 @@ import Link from "next/link";
 
 export default function FooterComponent() {
   return (
-    <footer className="bg-blue-100">
-      <div className="pt-36 sm:pt-44 md:pt-52 lg:pt-64 grid pb-10 w-10/12 gap-10 mx-auto grid-cols-1 md:grid-cols-2">
-        <div>
-          <Image
-            src="/img/global/logo.png"
-            alt="Logo"
-            width={500}
-            height={500}
-            className="w-72"
-          />
-          <p className="mt-2 font-semibold text-xl">
-            Ujian Tanpa Ribet, Hasil Lebih Akurat
-          </p>
-        </div>
-
-        <div>
-          <div className="flex items-center gap-x-2">
+    <footer className="border-t border-slate-200 bg-slate-50">
+      <div className="mx-auto max-w-7xl px-6 py-14 lg:px-10 lg:py-16">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
+          {/* Brand */}
+          <div className="lg:col-span-2">
             <Image
-              className="size-10"
-              src="/img/footer/support.png"
-              alt="Jam Kerja"
-              width={300}
-              height={300}
+              src="/img/global/logo.png"
+              alt="ExamOnline"
+              width={500}
+              height={500}
+              className="w-56 object-contain object-left"
             />
-            <span className="font-bold text-2xl xl:text-3xl">
-              Kontak & Dukungan
-            </span>
+
+            <p className="mt-4 max-w-md text-base leading-7 text-slate-500">
+              Platform ujian online yang dirancang untuk memberikan pengalaman
+              mengerjakan ujian yang mudah, cepat, dan nyaman.
+            </p>
+
+            <div className="mt-5 inline-flex items-center rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
+              Ujian Tanpa Ribet, Hasil Lebih Akurat
+            </div>
           </div>
-          <ul className="mt-3 text-lg">
-            <li>
-              Email :{" "}
+
+          {/* Navigasi */}
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
+              Navigasi
+            </h3>
+
+            <nav className="mt-5 flex flex-col gap-3">
               <Link
-                href="mailto:loremipsum@gmail.com"
-                className="hover:underline"
+                href="/"
+                className="w-fit text-sm text-slate-500 transition-colors hover:text-blue-600"
               >
-                loremipsum@gmail.com
+                Beranda
               </Link>
-            </li>
-            <li>No Telepon : 0898-2364-8262</li>
-            <Link href="#">Help / FAQ</Link>
-          </ul>
+
+              <Link
+                href="#content"
+                className="w-fit text-sm text-slate-500 transition-colors hover:text-blue-600"
+              >
+                Fitur Unggulan
+              </Link>
+
+              <Link
+                href="#system-preview"
+                className="w-fit text-sm text-slate-500 transition-colors hover:text-blue-600"
+              >
+                Tampilan Sistem
+              </Link>
+
+              <Link
+                href="#alur-ujian"
+                className="w-fit text-sm text-slate-500 transition-colors hover:text-blue-600"
+              >
+                Alur Ujian
+              </Link>
+            </nav>
+          </div>
+
+          {/* Bantuan */}
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900">
+              Bantuan
+            </h3>
+
+            <nav className="mt-5 flex flex-col gap-3">
+              <Link
+                href="/cara-pakai"
+                className="w-fit text-sm text-slate-500 transition-colors hover:text-blue-600"
+              >
+                Cara Pakai
+              </Link>
+
+              <Link
+                href="/faq"
+                className="w-fit text-sm text-slate-500 transition-colors hover:text-blue-600"
+              >
+                FAQ
+              </Link>
+
+              <Link
+                href="/contact"
+                className="w-fit text-sm text-slate-500 transition-colors hover:text-blue-600"
+              >
+                Hubungi Kami
+              </Link>
+            </nav>
+          </div>
         </div>
 
-        <div>
-          <div className="flex items-center gap-x-2">
-            <Image
-              className="size-10"
-              src="/img/footer/location.png"
-              alt="Alamat"
-              width={300}
-              height={300}
-            />
-            <span className="font-bold text-2xl xl:text-3xl">Alamat</span>
-          </div>
-          <p className="mt-3 text-lg text-justify max-w-sm">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Saepe
-            consectetur dolorum, magni dolores placeat
-          </p>
-        </div>
+        {/* Divider */}
+        <div className="my-10 h-px bg-slate-200" />
 
-        <div>
-          <div className="flex items-center gap-x-2">
-            <Image
-              className="size-10"
-              src="/img/footer/follow.png"
-              alt="Follow"
-              width={300}
-              height={300}
-            />
-            <span className="font-bold text-2xl xl:text-3xl">Follow Us</span>
-          </div>
-          <div className="flex flex-wrap mt-3 gap-5 text-lg">
+        {/* Bottom Footer */}
+        <div className="flex flex-col gap-4 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} ExamOnline. All rights reserved.</p>
+
+          <div className="flex flex-wrap gap-5">
             <Link
-              href="#"
-              className="flex items-center gap-3 grayscale-100 hover:grayscale-0 cursor-pointer transition-all"
+              href="/privacy-policy"
+              className="transition-colors hover:text-blue-600"
             >
-              <Image
-                src="/img/footer/instagram.png"
-                alt="instagram"
-                width={200}
-                height={200}
-                className="size-10"
-              />
-              <span>Instagram</span>
+              Kebijakan Privasi
             </Link>
+
             <Link
-              href="#"
-              className="flex items-center gap-3 grayscale-100 hover:grayscale-0 cursor-pointer transition-all"
+              href="/terms"
+              className="transition-colors hover:text-blue-600"
             >
-              <Image
-                src="/img/footer/linkedin.png"
-                alt="linkedin"
-                width={200}
-                height={200}
-                className="size-10"
-              />
-              <span>Linkedin</span>
-            </Link>
-            <Link
-              href="#"
-              className="flex items-center gap-3 grayscale-100 hover:grayscale-0 cursor-pointer transition-all"
-            >
-              <Image
-                src="/img/footer/facebook.png"
-                alt="facebook"
-                width={200}
-                height={200}
-                className="size-10"
-              />
-              <span>Facebook</span>
-            </Link>
-            <Link
-              href="#"
-              className="flex items-center gap-3 grayscale-100 hover:grayscale-0 cursor-pointer transition-all"
-            >
-              <Image
-                src="/img/footer/tiktok.png"
-                alt="tiktok"
-                width={200}
-                height={200}
-                className="size-10"
-              />
-              <span>Tiktok</span>
+              Syarat & Ketentuan
             </Link>
           </div>
         </div>
-      </div>
-
-      <div>
-        <hr className="rounded-full border border-slate-400 mx-10" />
-        <h1 className="py-3 w-10/12 mx-auto">
-          Copyright{" "}
-          <span className="text-blue-500 font-bold">
-            {new Date(Date.now()).getFullYear()}
-          </span>{" "}
-          Galuh panca wirasa rights reserved.
-        </h1>
       </div>
     </footer>
   );

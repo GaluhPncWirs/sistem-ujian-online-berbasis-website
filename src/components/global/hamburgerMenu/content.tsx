@@ -39,7 +39,7 @@ export default function HamburgerMenu({ children }: React.PropsWithChildren) {
 
       {/* Konten Menu */}
       <div
-        className={`fixed inset-0 top-0 left-0 w-full h-60 bg-slate-50 transition-all duration-300 text-xl font-semibold p-5 z-100
+        className={`fixed inset-0 -top-5 left-0 w-full h-60 bg-slate-50 transition-all duration-300 font-semibold p-3 z-100
     ${isCheked ? `translate-y-0` : `-translate-y-full`}`}
       >
         {children}

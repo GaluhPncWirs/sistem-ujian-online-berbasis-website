@@ -4,16 +4,16 @@ export default function ListContent() {
   return (
     <>
       <Link
-        href="/Introduction"
-        className="cursor-pointer font-semibold hover:text-slate-600"
+        href="/"
+        className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
       >
-        <span className="text-xl">Beranda</span>
+        Beranda
       </Link>
       <Link
-        href="/HowToUse"
-        className="cursor-pointer font-semibold hover:text-slate-600"
+        href="/"
+        className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-blue-50 hover:text-blue-600"
       >
-        <span className="text-xl">Cara Pakai</span>
+        Cara Pakai
       </Link>
     </>
   );
