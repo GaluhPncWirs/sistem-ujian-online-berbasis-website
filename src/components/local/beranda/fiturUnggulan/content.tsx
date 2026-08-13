@@ -1,31 +1,34 @@
+import { LucideIcon } from "lucide-react";
 import Image from "next/image";
 
 type propsFeature = {
-  imgSrc: string;
-  imgAlt: string;
+  Icon: LucideIcon;
   titleFeature: string;
   descFeature: string;
 };
 
-export default function CompFiturUnggulan(props: propsFeature) {
-  const { imgSrc, imgAlt, titleFeature, descFeature } = props;
+export default function FiturUnggulan(props: propsFeature) {
+  const { Icon, titleFeature, descFeature } = props;
 
   return (
-    <div className="max-w-2/3">
-      <div className="w-full flex justify-center mb-4">
-        <Image
-          src={imgSrc}
-          alt={imgAlt}
-          width={200}
-          height={200}
-          className="size-12"
-        />
+    <div className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-100/50">
+      {/* Image */}
+      <div className="mb-6 flex size-20 items-center justify-center rounded-2xl bg-blue-50 transition-colors duration-300 group-hover:bg-blue-100">
+        <Icon className="size-10 object-contain transition-transform duration-300 group-hover:scale-110 shrink-0" />
       </div>
-      <div className="shadow-md shadow-slate-500 rounded-lg">
-        <h1 className="bg-blue-400 text-white tracking-wide py-3 rounded-t-lg text-center font-semibold text-lg">
+
+      {/* Content */}
+      <div>
+        <h3 className="text-xl font-bold tracking-tight text-slate-900">
           {titleFeature}
-        </h1>
-        <p className="py-4 px-5 bg-white rounded-b-lg">{descFeature}</p>
+        </h3>
+
+        <p className="mt-3 text-sm leading-6 text-slate-500">{descFeature}</p>
+      </div>
+
+      {/* Bottom Accent */}
+      <div className="mt-auto pt-6">
+        <div className="h-1 w-10 rounded-full bg-blue-600 transition-all duration-300 group-hover:w-16" />
       </div>
     </div>
   );

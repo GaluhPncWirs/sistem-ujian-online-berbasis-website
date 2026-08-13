@@ -9,20 +9,24 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useEffect, useState } from "react";
-import CompFiturUnggulan from "@/components/local/beranda/fiturUnggulan/content";
 import CompAlurUjian from "@/components/local/beranda/alurUjian/content";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import {
   ArrowRight,
   Award,
+  ChartNoAxesColumnIncreasing,
   CheckCircle2,
   ChevronDown,
+  CircleCheck,
   LogIn,
   MousePointerClick,
   PencilLine,
   Route,
+  Shapes,
+  ShieldCheck,
 } from "lucide-react";
 import Homepage from "@/layout/homepage/content";
+import FiturUnggulan from "@/components/local/beranda/fiturUnggulan/content";
 
 export default function Introduction() {
   const getidUsers = useGetIdUsers((state) => state.role);
@@ -128,43 +132,56 @@ export default function Introduction() {
         </div>
       </header>
 
-      <section className="bg-slate-50 bg-linear-to-b from-slate-100">
-        <div className="mx-auto w-10/12 py-14" id="content">
-          <h1 className="text-4xl font-bold mb-12 text-[#0F4C75] tracking-wide">
-            Fitur Unggulan
-          </h1>
-          <div className="grid gap-10 place-content-center place-items-center grid-cols-1 md:grid-cols-2">
-            <CompFiturUnggulan
-              imgSrc="/img/beranda/mudah.png"
-              imgAlt="Mudah"
+      <section
+        id="content"
+        className="relative overflow-hidden bg-gradient-to-b from-white via-slate-50 to-white"
+      >
+        {/* Decorative Background */}
+        <div className="pointer-events-none absolute -left-32 top-20 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 bottom-10 h-72 w-72 rounded-full bg-sky-200/40 blur-3xl" />
+        <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-10">
+          {/* Section Heading */}
+          <div className="mb-10">
+            <h2 className="text-3xl font-extrabold text-slate-900 sm:text-4xl lg:text-5xl">
+              Fitur Unggulan
+            </h2>
+
+            <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
+              Nikmati pengalaman ujian online yang lebih mudah, cepat, aman, dan
+              nyaman dengan berbagai fitur yang kami sediakan.
+            </p>
+          </div>
+
+          {/* Feature Cards */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <FiturUnggulan
+              Icon={MousePointerClick}
               titleFeature="Mudah Diakses"
-              descFeature="Ujian dapat diikuti dimanapun Anda Berada"
+              descFeature="Ujian dapat diikuti kapan saja dan di mana saja selama terhubung dengan internet."
             />
 
-            <CompFiturUnggulan
-              imgSrc="/img/beranda/hasil.png"
-              imgAlt="Mudah"
+            <FiturUnggulan
+              Icon={CircleCheck}
               titleFeature="Hasil Langsung"
-              descFeature="Nilai langsung keluar setelah selesai ujian."
+              descFeature="Nilai ujian dapat langsung diketahui setelah peserta menyelesaikan ujian."
             />
 
-            <CompFiturUnggulan
-              imgSrc="/img/beranda/variation.png"
-              imgAlt="Mudah"
+            <FiturUnggulan
+              Icon={Shapes}
               titleFeature="Soal Beragam"
-              descFeature="Mendukung soal pilihan ganda dan essay."
+              descFeature="Mendukung berbagai jenis soal seperti pilihan ganda dan essay."
             />
-            <CompFiturUnggulan
-              imgSrc="/img/beranda/keamanan.png"
-              imgAlt="keamanan"
+
+            <FiturUnggulan
+              Icon={ShieldCheck}
               titleFeature="Keamanan Terjamin"
-              descFeature="Data peserta dan hasil ujian terjamin aman."
+              descFeature="Data peserta dan hasil ujian dijaga dengan sistem yang aman dan terpercaya."
             />
           </div>
         </div>
       </section>
 
-      <div className="bg-blue-100 pt-14 sm:pt-20 lg:pt-32">
+      <section className="bg-blue-100 pt-14 sm:pt-20 lg:pt-32">
         <div className="mx-auto py-16 w-10/12">
           <h1 className="text-4xl font-bold mb-5 text-[#0F4C75] tracking-wide">
             Tampilan Sistem
@@ -223,19 +240,7 @@ export default function Introduction() {
             </Carousel>
           </div>
         </div>
-      </div>
-
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 1440 320"
-        className="absolute"
-      >
-        <path
-          fill="#dbeafe"
-          fillOpacity="1"
-          d="M0,192L30,170.7C60,149,120,107,180,101.3C240,96,300,128,360,144C420,160,480,160,540,138.7C600,117,660,75,720,96C780,117,840,203,900,229.3C960,256,1020,224,1080,176C1140,128,1200,64,1260,42.7C1320,21,1380,43,1410,53.3L1440,64L1440,0L1410,0C1380,0,1320,0,1260,0C1200,0,1140,0,1080,0C1020,0,960,0,900,0C840,0,780,0,720,0C660,0,600,0,540,0C480,0,420,0,360,0C300,0,240,0,180,0C120,0,60,0,30,0L0,0Z"
-        ></path>
-      </svg>
+      </section>
 
       <div className="bg-slate-50 bg-linear-to-t from-slate-100 pt-32 sm:pt-40 md:pt-52">
         <div className="mx-auto w-10/12 lg:w-2/3">
