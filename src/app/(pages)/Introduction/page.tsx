@@ -18,7 +18,6 @@ import {
   LogIn,
   MousePointerClick,
   PencilLine,
-  Route,
   Shapes,
   ShieldCheck,
 } from "lucide-react";
@@ -31,7 +30,7 @@ export default function Introduction() {
 
   return (
     <Homepage>
-      <header className="relative flex items-center overflow-hidden pt-10">
+      <header className="relative flex items-center overflow-hidden">
         {/* Background Image */}
         <Image
           src="/img/beranda/heroSectionUjian.jpg"

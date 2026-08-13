@@ -12,7 +12,7 @@ export default function Homepage({ children }: any) {
   return (
     <main>
       <NavigasiBar />
-      {children}
+      <div className="pt-14">{children}</div>
       <FooterComponent />
     </main>
   );
