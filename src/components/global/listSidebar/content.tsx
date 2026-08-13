@@ -95,7 +95,7 @@ export default function ListSidebar() {
           <Button
             type="button"
             variant="destructive"
-            onClick={useHandleLogout}
+            onClick={useHandleLogout()}
             className="flex w-full items-center gap-3 px-3 py-3 text-left text-sm font-semibold hover:bg-red-400"
           >
             <LogOut className="size-5" />

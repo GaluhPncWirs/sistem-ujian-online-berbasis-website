@@ -34,13 +34,7 @@ import { toast } from "sonner";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { useGetDataUsers } from "@/store/useGetDataUsers/state";
 import MainContent from "@/layout/mainContent/content";
-import {
-  BarChart3,
-  BellRing,
-  CalendarClock,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { BarChart3, BellRing, CalendarClock } from "lucide-react";
 
 type ExamStatus = "BELUM_MULAI" | "BERLANGSUNG" | "LEWAT";
 

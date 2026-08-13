@@ -24,6 +24,7 @@
         "merombak desain ui/ux di halaman auth login dan register",
         "selesai untuk konfigurasi form input menggunakan zod dan react-hook form",
         "sudah berfungsi normal untuk proses login maupun register",
-        "selesai merombak ui di bagian sidebar di halaman khusus siswa"
+        "selesai merombak ui di bagian sidebar di halaman khusus siswa",
+        "selesai untuk merombak desain ui halaman dashboard siswa"
     ]
 }
