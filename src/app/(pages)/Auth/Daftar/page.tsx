@@ -5,9 +5,11 @@ import { supabase } from "@/lib/supabase/data";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import FormInput from "@/components/local/authFormInput/formInput/content";
 import FormButton from "@/components/local/authFormInput/formButton/content";
 import FormAuth from "@/layout/formAuth/content";
+import FloatingLabel from "@/components/global/floatingLabel/content";
+import { AtSign, KeyRound, Repeat, School2, UserRound } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function RegisterAccount() {
   const [clearForm, setClearForm] = useState(false);
@@ -83,47 +85,60 @@ export default function RegisterAccount() {
 
   return (
     <FormAuth formTitle={"Buat Akun"}>
-      <form
-        className="flex justify-center flex-col w-3/4 gap-y-3 mx-auto"
-        onSubmit={(e) => handleRegister(e)}
-      >
-        <FormInput
-          typeInput="text"
-          placeholder="adam jobs"
-          labelTitle="Nama"
-          nameInput="fullname"
-          handleValueInput={handleValueInput}
-          formMustFilled={formMustFilled.fullname}
+      <form className="flex flex-col gap-5" onSubmit={(e) => handleRegister(e)}>
+        {/* nama */}
+        <FloatingLabel
+          type="text"
+          id="nama"
+          label="Nama"
+          placeholder=" "
+          Icon={UserRound}
         />
-        <FormInput
-          typeInput="text"
-          placeholder="TP2"
-          labelTitle="Kelas"
-          nameInput="kelas"
-          handleValueInput={handleValueInput}
-          formMustFilled={formMustFilled.kelas}
+
+        {/* kelas */}
+        <FloatingLabel
+          type="text"
+          id="kelas"
+          label="Kelas"
+          placeholder=" "
+          Icon={School2}
         />
-        <FormInput
-          typeInput="email"
-          placeholder="adamJobs@gmail.com"
-          labelTitle="Email"
-          nameInput="email"
-          handleValueInput={handleValueInput}
-          formMustFilled={formMustFilled.email}
+
+        {/* email */}
+        <FloatingLabel
+          type="email"
+          id="email"
+          label="Email"
+          placeholder=" "
+          Icon={AtSign}
         />
-        <FormInput
-          typeInput="password"
-          placeholder="**********"
-          labelTitle="Password"
-          nameInput="password"
-          handleValueInput={handleValueInput}
-          formMustFilled={formMustFilled.password}
+
+        {/* password */}
+        <FloatingLabel
+          type="password"
+          id="password"
+          label="Password"
+          placeholder=" "
+          Icon={KeyRound}
         />
-        <FormButton
-          buttonName="Register"
-          isFormFilled={isFormFilled}
-          isLoading={isLoading}
+
+        {/* repeat password */}
+        <FloatingLabel
+          type="password"
+          id="ulangiPassword"
+          label="Ulangi Password"
+          placeholder=" "
+          Icon={Repeat}
         />
+
+        {/* register button */}
+
+        <Button
+          variant="outline"
+          className="bg-blue-400 rounded-md h-10 mt-3 text-slate-50 tracking-wide font-semibold cursor-pointer"
+        >
+          Buat Akun
+        </Button>
       </form>
     </FormAuth>
   );

@@ -1,7 +1,7 @@
 "use client";
 import { useHandleInput } from "@/app/hooks/getHandleInput";
+import FloatingLabel from "@/components/global/floatingLabel/content";
 import FormButton from "@/components/local/authFormInput/formButton/content";
-import FormInput from "@/components/local/authFormInput/formInput/content";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,6 +11,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import FormAuth from "@/layout/formAuth/content";
+import {
+  AtSign,
+  Book,
+  BookOpen,
+  GraduationCap,
+  Key,
+  KeyRound,
+  User,
+  UserRound,
+} from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -74,66 +84,96 @@ export default function LoginAccount() {
 
   return (
     <FormAuth formTitle={"Login"}>
-      <div className="w-3/4 mx-auto">
-        <form
-          className="flex justify-center flex-col gap-y-3"
-          onSubmit={(e) => handleLogin(e)}
-        >
-          <div>
-            <label
-              htmlFor="akunGuru"
-              className="text-xl font-semibold text-blue-500 inline-block mb-3"
-            >
-              Jenis Akun
-            </label>
-            <Select onValueChange={(val) => setValueTypeAccount(val)}>
-              <SelectTrigger className="w-full bg-white cursor-pointer p-2.5">
-                <SelectValue placeholder="Pilih Jenis" />
-              </SelectTrigger>
-              <SelectContent className="bg-white p-1">
-                <SelectItem value="guru">Guru</SelectItem>
-                <SelectItem value="siswa">Siswa</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <FormInput
-            typeInput="email"
-            placeholder="adamJobs@gmail.com"
-            labelTitle="Email"
-            nameInput="email"
-            handleValueInput={handleValueInput}
-            formMustFilled={formMustFilled.email}
-          />
-          <FormInput
-            typeInput="password"
-            placeholder="**********"
-            labelTitle="Password"
-            nameInput="password"
-            handleValueInput={handleValueInput}
-            formMustFilled={formMustFilled.password}
-          />
-          <FormButton
-            buttonName="Login"
-            isFormFilled={isFormFilled}
-            isLoading={isLoading}
-          />
-        </form>
-        <div className="text-right mt-2">
-          Masuk dengan akun{" "}
-          <Button
-            onClick={() =>
-              signIn("google", {
-                redirect: false,
-                callbackUrl: "/Student/Dashboard",
-              })
-            }
-            variant="link"
-            className="text-blue-600 px-0 text-base font-semibold"
+      {/* Form */}
+      <form className="flex flex-col gap-5" onSubmit={(e) => handleLogin(e)}>
+        {/* Account Type */}
+        <Select onValueChange={(val) => setValueTypeAccount(val)}>
+          <SelectTrigger
+            id="accountType"
+            className="w-full rounded-lg border-slate-200 bg-slate-50 px-4 shadow-none transition-all focus:border-blue-500 focus:ring-blue-500"
           >
-            Google
-          </Button>
-        </div>
+            <SelectValue placeholder="Pilih jenis akun" />
+          </SelectTrigger>
+
+          <SelectContent className="rounded-lg border-slate-200 bg-white">
+            <SelectItem value="guru">
+              <GraduationCap className="size-5" /> Guru
+            </SelectItem>
+            <SelectItem value="siswa">
+              <Book className="size-4.5" />
+              Siswa
+            </SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Email */}
+        <FloatingLabel
+          type="email"
+          id="email"
+          label="Email"
+          placeholder=" "
+          Icon={AtSign}
+        />
+
+        {/* Password */}
+        <FloatingLabel
+          type="password"
+          id="password"
+          label="Password"
+          placeholder=" "
+          Icon={KeyRound}
+        />
+
+        {/* Login Button */}
+        <Button
+          variant="outline"
+          className="bg-blue-400 rounded-md h-10 mt-3 text-slate-50 tracking-wide font-semibold cursor-pointer"
+        >
+          Masuk ke Akun
+        </Button>
+      </form>
+
+      {/* Divider */}
+      <div className="my-6 flex items-center gap-4">
+        <div className="h-px flex-1 bg-slate-200" />
+        <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+          atau
+        </span>
+        <div className="h-px flex-1 bg-slate-200" />
       </div>
+
+      {/* Google */}
+      <Button
+        type="button"
+        onClick={() =>
+          signIn("google", {
+            redirect: false,
+            callbackUrl: "/Student/Dashboard",
+          })
+        }
+        variant="outline"
+        className="h-12 w-full rounded-xl border-slate-200 bg-white font-semibold text-slate-700 shadow-none transition-all hover:bg-slate-50"
+      >
+        <svg viewBox="0 0 24 24" className="mr-2 size-5" aria-hidden="true">
+          <path
+            fill="#4285F4"
+            d="M21.35 12.27c0-.79-.07-1.55-.23-2.27H12v4.3h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.42Z"
+          />
+          <path
+            fill="#34A853"
+            d="M12 21.5c2.63 0 4.84-.87 6.45-2.36l-3.14-2.45c-.87.58-1.98.92-3.31.92-2.54 0-4.69-1.72-5.46-4.03H3.3v2.53A9.73 9.73 0 0 0 12 21.5Z"
+          />
+          <path
+            fill="#FBBC05"
+            d="M6.54 13.58A5.84 5.84 0 0 1 6.23 12c0-.55.11-1.08.31-1.58V7.89H3.3A9.72 9.72 0 0 0 2.25 12c0 1.57.38 3.05 1.05 4.11l3.24-2.53Z"
+          />
+          <path
+            fill="#EA4335"
+            d="M12 6.39c1.43 0 2.71.49 3.72 1.45l2.79-2.79C16.83 3.5 14.63 2.5 12 2.5a9.73 9.73 0 0 0-8.7 5.39l3.24 2.53C7.31 8.11 9.46 6.39 12 6.39Z"
+          />
+        </svg>
+        Lanjutkan dengan Google
+      </Button>
     </FormAuth>
   );
 }
