@@ -32,9 +32,9 @@ export default function HamburgerMenu({ children }: React.PropsWithChildren) {
           checked={isCheked}
           onChange={() => setIsCheked((prev) => !prev)}
         />
-        <span className="block w-6 h-1 bg-black rounded-md transition-all"></span>
-        <span className="block w-6 h-1 bg-black rounded-md transition-all"></span>
-        <span className="block w-6 h-1 bg-black rounded-md transition-all"></span>
+        <span className="block w-6 h-1 bg-slate-800 rounded-md transition-all"></span>
+        <span className="block w-6 h-1 bg-slate-800 rounded-md transition-all"></span>
+        <span className="block w-6 h-1 bg-slate-800 rounded-md transition-all"></span>
       </div>
 
       {/* Konten Menu */}

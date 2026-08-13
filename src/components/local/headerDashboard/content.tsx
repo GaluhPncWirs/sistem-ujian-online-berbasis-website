@@ -15,7 +15,7 @@ export default function HeaderDashboard({
   isLocationPage,
 }: PropsHeaderDashboard) {
   return (
-    <div className="flex items-center justify-end gap-x-3 relative z-90">
+    <div className="flex items-center justify-end gap-x-3 absolute right-0">
       {remainder.length > 0 ? (
         <Popover>
           <PopoverTrigger asChild>
@@ -23,7 +23,7 @@ export default function HeaderDashboard({
               <div className="size-4 bg-red-400 absolute rounded-md flex justify-center items-center">
                 <span className="text-xs font-bold">{remainder.length}</span>
               </div>
-              <Bell className="size-7" />
+              <Bell className="size-6" />
             </div>
           </PopoverTrigger>
           <PopoverContent className="w-fit p-3">
@@ -36,7 +36,7 @@ export default function HeaderDashboard({
           </PopoverContent>
         </Popover>
       ) : (
-        <Bell className="size-7" />
+        <Bell className="size-6" />
       )}
       <HamburgerMenu>
         <ListSidebar />

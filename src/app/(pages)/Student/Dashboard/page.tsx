@@ -239,386 +239,639 @@ export default function DashboardStudent() {
             fullName={dataStudent?.fullName}
             exams={scheduleExams}
           />
-          <div className="mt-5">
-            <p className="text-2xl font-semibold">
-              Berikut Ringkasan Ujian Anda
-            </p>
-            <div className="mt-8">
-              <div className="flex justify-around items-center">
-                <div className="bg-[#3396D3] rounded-lg p-5 font-semibold flex flex-col justify-center items-center gap-y-2 w-44 shadow-md shadow-slate-700">
-                  <CalendarClock className="size-9" strokeWidth={1.5} />
-                  <h1 className="text-lg">Ujian Terjadwal</h1>
-                  <span className="text-xl">
-                    {scheduleExams.filter(
-                      (done: { status_exam: boolean }) =>
-                        done.status_exam !== true,
-                    ).length || "0"}
-                  </span>
+          <div className="space-y-8">
+            {/* Summary */}
+            <section>
+              <div className="mb-5 space-y-2">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                  Overview
+                </p>
+
+                <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+                  Ringkasan Ujian
+                </h2>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Pantau ujian yang tersedia dan perkembangan hasil ujian Anda.
+                </p>
+              </div>
+
+              {/* Statistic Cards */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* Ujian Terjadwal */}
+                <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-100/40">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-500">
+                        Ujian Terjadwal
+                      </p>
+
+                      <p className="mt-2 text-3xl font-extrabold text-slate-900">
+                        {scheduleExams.filter(
+                          (done: { status_exam: boolean }) =>
+                            done.status_exam !== true,
+                        ).length || 0}
+                      </p>
+
+                      <p className="mt-1 text-xs text-slate-400">
+                        Ujian yang belum diselesaikan
+                      </p>
+                    </div>
+
+                    <div className="flex size-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                      <CalendarClock className="size-6" strokeWidth={1.8} />
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-[#3396D3] rounded-lg p-5 font-semibold flex flex-col justify-center items-center gap-y-2 w-44 shadow-md shadow-slate-700">
-                  <BarChart3 className="size-9" strokeWidth={1.5} />
-                  <h1 className="text-lg">Nilai Rata Rata</h1>
-                  <span className="text-xl">
-                    {Math.round(averageValue) || "0"}
-                  </span>
+
+                {/* Nilai Rata-rata */}
+                <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-100/40">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-500">
+                        Nilai Rata-Rata
+                      </p>
+
+                      <p className="mt-2 text-3xl font-extrabold text-slate-900">
+                        {Math.round(averageValue) || 0}
+                      </p>
+
+                      <p className="mt-1 text-xs text-slate-400">
+                        Berdasarkan ujian yang telah selesai
+                      </p>
+                    </div>
+
+                    <div className="flex size-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+                      <BarChart3 className="size-6" strokeWidth={1.8} />
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="mt-10">
-                {deadlineUjianTercepatHariIni() && (
-                  <div>
-                    <h1 className="text-2xl font-semibold mb-4">
-                      Ujian Yang Waktu Tenggatnya Akan Habis
-                    </h1>
-                    <div className="bg-sky-300 flex justify-between gap-x-4 p-5 items-center rounded-xl shadow-md shadow-slate-600">
-                      <div className="flex justify-center items-center gap-x-5">
-                        <BellRing className="size-9" strokeWidth={1.5} />
-                        <div>
-                          <h1 className="text-xl font-semibold mb-1.5">
-                            {deadlineUjianTercepatHariIni()?.exams.nama_ujian}
-                          </h1>
-                          <p className="text-sm font-medium">
-                            {`${
-                              deadlineUjianTercepatHariIni()?.dibuat_tgl
-                            } di Jam ${
-                              deadlineUjianTercepatHariIni()?.tenggat_waktu
-                            }`}
-                          </p>
-                        </div>
-                      </div>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            className="cursor-pointer text-base font-semibold px-5"
-                            variant="secondary"
-                            onClick={() => setAccepted(true)}
-                          >
-                            Mulai
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle className="mb-2">
-                              Konfirmasi Masuk Ujian
-                            </DialogTitle>
-                            <DialogDescription className="text-start">
-                              Apakah Anda Yakin ingin Mengerjakan Soal{" "}
-                              <span className="font-bold">
-                                "
-                                {deadlineUjianTercepatHariIni()?.exams
-                                  .nama_ujian || ""}
-                                "
-                              </span>{" "}
-                              Ini ?{" "}
-                              <span className="block mt-2">
-                                Persiapkan Diri Anda Dikarenakan Jika Sudah
-                                Masuk Kedalam Halaman Ujian Maka Sudah Tidak
-                                Bisa Kembali Lagi.
-                              </span>
-                            </DialogDescription>
-                          </DialogHeader>
+            </section>
 
-                          <DialogFooter>
-                            <DialogClose asChild>
-                              <Button
-                                variant="outline"
-                                onClick={() => setAccepted(false)}
-                              >
-                                Batal
-                              </Button>
-                            </DialogClose>
-                            <DialogClose asChild>
-                              <Button
-                                onClick={() =>
-                                  push(
-                                    `/Student/Exams/StartExam?idExams=${
-                                      deadlineUjianTercepatHariIni().idExams
-                                    }`,
-                                  )
-                                }
-                                className="cursor-pointer"
-                                disabled={accepted}
-                              >
-                                {confirm <= 0 ? "Oke" : confirm}
-                              </Button>
-                            </DialogClose>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  </div>
-                )}
-                <div className="mt-8">
-                  <div className="mb-7">
-                    <div className="font-semibold bg-[#0F4C75] rounded-md py-3 mb-5 text-slate-200 flex items-center justify-between px-5 lg:px-7">
-                      <span className="text-xl">Ujian Tersedia</span>
-                      <div className="flex">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                          <ChevronRight
-                            className="size-8 text-amber-300"
-                            key={i}
-                          />
-                        ))}
+            {/* Deadline Exam */}
+            {deadlineUjianTercepatHariIni() && (
+              <section>
+                <div className="mb-4 space-y-2">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
+                    Perlu Diperhatikan
+                  </p>
+
+                  <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+                    Ujian Segera Berakhir
+                  </h2>
+                </div>
+
+                <div className="relative overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-white to-orange-50 p-5 shadow-sm sm:p-6">
+                  <div className="absolute -right-10 -top-10 size-40 rounded-full bg-amber-100/50 blur-2xl" />
+
+                  <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-start gap-4">
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                        <BellRing className="size-6" strokeWidth={1.8} />
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wider text-amber-600">
+                          Deadline Terdekat
+                        </p>
+
+                        <h3 className="mt-1 text-xl font-bold text-slate-900">
+                          {deadlineUjianTercepatHariIni()?.exams.nama_ujian}
+                        </h3>
+
+                        <p className="mt-1 text-sm font-medium text-slate-500">
+                          {deadlineUjianTercepatHariIni()?.dibuat_tgl} ·{" "}
+                          {deadlineUjianTercepatHariIni()?.tenggat_waktu}
+                        </p>
                       </div>
                     </div>
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-blue-300">
-                          <TableHead>No</TableHead>
-                          <TableHead>Nama Ujian</TableHead>
-                          <TableHead>Waktu Tenggat</TableHead>
-                          <TableHead>Guru Pengampu</TableHead>
-                          <TableHead>Status Ujian</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {scheduleExams.length > 0 ? (
-                          scheduleExams.map((data: any, i: number) => {
-                            const status = getExamStatus(
-                              data.tenggat_waktu,
-                              data.dibuat_tgl,
-                            );
-                            return (
-                              <TableRow key={i}>
-                                <TableCell>{i + 1}</TableCell>
-                                <TableCell>{data.exams.nama_ujian}</TableCell>
-                                <TableCell>
-                                  {data.dibuat_tgl} {data.tenggat_waktu}
-                                </TableCell>
-                                <TableCell>
-                                  {data.account_teacher.fullName}
-                                </TableCell>
-                                <TableCell>
-                                  {data.status_exam === true &&
-                                  data.hasil_ujian !== "telat" ? (
-                                    "Selesai"
-                                  ) : data.status_exam === true &&
-                                    data.hasil_ujian === "telat" ? (
-                                    "Telat"
-                                  ) : status === "BELUM_MULAI" ? (
-                                    "Ujian Belum Dimulai"
-                                  ) : status === "LEWAT" ? (
-                                    "Ujian Telah Lewat Batas Waktu"
-                                  ) : (
-                                    <Dialog>
-                                      <DialogTrigger asChild>
-                                        <button className="hover:underline text-blue-700">
-                                          Sedang Berlangsung
-                                        </button>
-                                      </DialogTrigger>
 
-                                      <DialogContent>
-                                        <DialogHeader>
-                                          <DialogTitle>
-                                            Konfirmasi Masuk Ujian
-                                          </DialogTitle>
-                                          <DialogDescription>
-                                            Yakin masuk "{data.exams.nama_ujian}
-                                            "?
-                                          </DialogDescription>
-                                        </DialogHeader>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          onClick={() => setAccepted(true)}
+                          className="w-full rounded-xl bg-amber-500 px-6 font-semibold text-white shadow-md shadow-amber-500/20 hover:bg-amber-600 sm:w-auto"
+                        >
+                          Mulai Ujian
+                        </Button>
+                      </DialogTrigger>
 
-                                        <DialogFooter>
-                                          <DialogClose asChild>
-                                            <Button variant="outline">
-                                              Batal
-                                            </Button>
-                                          </DialogClose>
+                      <DialogContent className="rounded-2xl sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle className="text-xl font-bold">
+                            Konfirmasi Masuk Ujian
+                          </DialogTitle>
 
-                                          <Button
-                                            onClick={() =>
-                                              push(
-                                                `/Student/Exams/StartExam?idExams=${data.idExams}`,
-                                              )
-                                            }
-                                          >
-                                            Mulai
-                                          </Button>
-                                        </DialogFooter>
-                                      </DialogContent>
-                                    </Dialog>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })
-                        ) : (
-                          <TableRow>
-                            <TableCell
-                              className="text-center text-lg font-bold"
-                              colSpan={5}
+                          <DialogDescription className="pt-2 text-left leading-6">
+                            Apakah Anda yakin ingin mengerjakan soal{" "}
+                            <span className="font-bold text-slate-900">
+                              "
+                              {deadlineUjianTercepatHariIni()?.exams
+                                .nama_ujian || ""}
+                              "
+                            </span>
+                            ?
+                            <span className="mt-3 block">
+                              Pastikan Anda sudah siap. Setelah masuk ke halaman
+                              ujian, Anda tidak dapat kembali ke dashboard.
+                            </span>
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <DialogFooter className="mt-4 gap-2">
+                          <DialogClose asChild>
+                            <Button
+                              variant="outline"
+                              onClick={() => setAccepted(false)}
+                              className="rounded-xl"
                             >
-                              Belum Ada Ujian
+                              Batal
+                            </Button>
+                          </DialogClose>
+
+                          <DialogClose asChild>
+                            <Button
+                              onClick={() =>
+                                push(
+                                  `/Student/Exams/StartExam?idExams=${
+                                    deadlineUjianTercepatHariIni().idExams
+                                  }`,
+                                )
+                              }
+                              className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                              disabled={accepted}
+                            >
+                              {confirm <= 0 ? "Mulai" : confirm}
+                            </Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* Available Exams */}
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <h2 className="text-xl font-bold text-slate-900">
+                      Ujian Tersedia
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Daftar ujian yang tersedia untuk Anda.
+                    </p>
+                  </div>
+
+                  <div className="hidden rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 sm:block">
+                    {scheduleExams.length} Ujian
+                  </div>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50 hover:bg-slate-50">
+                      <TableHead className="font-semibold text-sm text-slate-600">
+                        No
+                      </TableHead>
+                      <TableHead className="font-semibold text-sm text-slate-600">
+                        Nama Ujian
+                      </TableHead>
+                      <TableHead className="font-semibold text-sm text-slate-600">
+                        Waktu Tenggat
+                      </TableHead>
+                      <TableHead className="font-semibold text-sm text-slate-600">
+                        Guru Pengampu
+                      </TableHead>
+                      <TableHead className="font-semibold text-sm text-slate-600">
+                        Status
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+                    {scheduleExams.length > 0 ? (
+                      scheduleExams.map((data: any, i: number) => {
+                        const status = getExamStatus(
+                          data.tenggat_waktu,
+                          data.dibuat_tgl,
+                        );
+
+                        return (
+                          <TableRow
+                            key={i}
+                            className="transition-colors hover:bg-slate-50"
+                          >
+                            <TableCell className="font-medium text-slate-500">
+                              {i + 1}
+                            </TableCell>
+
+                            <TableCell className="font-semibold text-slate-800">
+                              {data.exams.nama_ujian}
+                            </TableCell>
+
+                            <TableCell className="text-sm text-slate-500">
+                              {data.dibuat_tgl} {data.tenggat_waktu}
+                            </TableCell>
+
+                            <TableCell className="text-sm text-slate-600">
+                              {data.account_teacher.fullName}
+                            </TableCell>
+
+                            <TableCell>
+                              {data.status_exam === true &&
+                              data.hasil_ujian !== "telat" ? (
+                                <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-600">
+                                  Selesai
+                                </span>
+                              ) : data.status_exam === true &&
+                                data.hasil_ujian === "telat" ? (
+                                <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
+                                  Telat
+                                </span>
+                              ) : status === "BELUM_MULAI" ? (
+                                <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500">
+                                  Belum Dimulai
+                                </span>
+                              ) : status === "LEWAT" ? (
+                                <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
+                                  Lewat Batas Waktu
+                                </span>
+                              ) : (
+                                <Dialog>
+                                  <DialogTrigger asChild>
+                                    <button className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100">
+                                      Sedang Berlangsung
+                                    </button>
+                                  </DialogTrigger>
+
+                                  <DialogContent className="rounded-2xl sm:max-w-md">
+                                    <DialogHeader>
+                                      <DialogTitle className="text-xl font-bold">
+                                        Konfirmasi Masuk Ujian
+                                      </DialogTitle>
+
+                                      <DialogDescription className="pt-2">
+                                        Yakin ingin masuk ke ujian{" "}
+                                        <span className="font-bold text-slate-900">
+                                          "{data.exams.nama_ujian}"
+                                        </span>
+                                        ?
+                                      </DialogDescription>
+                                    </DialogHeader>
+
+                                    <DialogFooter className="mt-4 gap-2">
+                                      <DialogClose asChild>
+                                        <Button
+                                          variant="outline"
+                                          className="rounded-xl"
+                                        >
+                                          Batal
+                                        </Button>
+                                      </DialogClose>
+
+                                      <Button
+                                        onClick={() =>
+                                          push(
+                                            `/Student/Exams/StartExam?idExams=${data.idExams}`,
+                                          )
+                                        }
+                                        className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                                      >
+                                        Mulai
+                                      </Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
+                              )}
                             </TableCell>
                           </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                  <div>
-                    <div className="font-semibold bg-[#0F4C75] rounded-md py-3 mb-5 text-slate-200 flex items-center flex-row-reverse justify-between px-5 lg:px-7">
-                      <span className="text-xl text-end">Nilai Terakhir</span>
-                      <div className="flex">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                          <ChevronLeft
-                            className="size-8 text-amber-300"
-                            key={i}
-                          />
-                        ))}
-                      </div>
-                    </div>
+                        );
+                      })
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-32 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <CalendarClock className="size-8 text-slate-300" />
 
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-blue-300">
-                          <TableHead>No</TableHead>
-                          <TableHead>Nama Ujian</TableHead>
-                          <TableHead>Tgl Pengerjaan</TableHead>
-                          <TableHead>Nilai Ujian</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {scheduleExams.length > 0 ? (
-                          scheduleExams.map((item: any, i: number) =>
-                            item.status_exam === true &&
-                            item.hasil_ujian !== "telat" ? (
-                              <TableRow key={i}>
-                                <TableCell>{i + 1}</TableCell>
-                                <TableCell>
-                                  <HoverCard
-                                    openDelay={200}
-                                    closeDelay={200}
-                                    key={i}
+                            <p className="mt-2 font-semibold text-slate-500">
+                              Belum Ada Ujian
+                            </p>
+
+                            <p className="text-sm text-slate-400">
+                              Ujian yang tersedia akan muncul di sini.
+                            </p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </section>
+
+            {/* Recent Scores */}
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
+                <div className="space-y-1">
+                  <h2 className="text-xl font-bold text-slate-900">
+                    Nilai Terakhir
+                  </h2>
+
+                  <p className="text-sm text-slate-500">
+                    Riwayat hasil ujian yang telah Anda selesaikan.
+                  </p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50 hover:bg-slate-50">
+                      <TableHead className="font-semibold text-slate-600">
+                        No
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-600">
+                        Nama Ujian
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-600">
+                        Tanggal Pengerjaan
+                      </TableHead>
+                      <TableHead className="font-semibold text-slate-600">
+                        Nilai
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+                    {scheduleExams.length > 0 ? (
+                      scheduleExams.map((item: any, i: number) =>
+                        item.status_exam === true &&
+                        item.hasil_ujian !== "telat" ? (
+                          <TableRow
+                            key={i}
+                            className="transition-colors hover:bg-slate-50"
+                          >
+                            <TableCell className="font-medium text-slate-500">
+                              {i + 1}
+                            </TableCell>
+
+                            <TableCell>
+                              <HoverCard openDelay={200} closeDelay={200}>
+                                <HoverCardTrigger asChild>
+                                  <Link
+                                    href={`/Student/Dashboard/ResultExam?id=${item.idExams}`}
+                                    className="font-semibold text-slate-800 transition-colors hover:text-blue-600 hover:underline"
                                   >
-                                    <HoverCardTrigger asChild>
-                                      <Link
-                                        href={`/Student/Dashboard/ResultExam?id=${item.idExams}`}
-                                        className="hover:underline hover:text-blue-700"
-                                      >
-                                        {item.exams.nama_ujian}
-                                      </Link>
-                                    </HoverCardTrigger>
-                                    <HoverCardContent className="w-fit p-2">
-                                      <h1 className="font-semibold text-xs">
-                                        Lihat Hasil Ujian
-                                      </h1>
-                                    </HoverCardContent>
-                                  </HoverCard>
-                                </TableCell>
-                                <TableCell>
-                                  {useConvertDate(
-                                    item.created_at_historyExams,
-                                    {
-                                      minute: "numeric",
-                                      hour: "numeric",
-                                      day: "numeric",
-                                      month: "long",
-                                      year: "numeric",
-                                    },
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  {item.hasil_ujian !== "telat"
-                                    ? item.tipe_ujian === "pg"
-                                      ? `${item.hasil_ujian} Dari 100`
-                                      : `${item.hasil_ujian} ${
-                                          item.hasil_ujian !== "pending"
-                                            ? "Dari 100"
-                                            : ""
-                                        }`
-                                    : "Tidak Ada Nilai"}
-                                </TableCell>
-                              </TableRow>
-                            ) : lateExam.length > 0 ? (
-                              <TableRow key={i}>
-                                <TableCell
-                                  colSpan={4}
-                                  className="text-center text-lg font-semibold"
-                                >
-                                  Telat Melakukan Ujian
-                                </TableCell>
-                              </TableRow>
-                            ) : (
-                              <TableRow key={i}>
-                                <TableCell
-                                  colSpan={4}
-                                  className="text-center text-lg font-semibold"
-                                >
-                                  Belum Ada Nilai
-                                </TableCell>
-                              </TableRow>
-                            ),
-                          )
-                        ) : (
-                          <TableRow>
+                                    {item.exams.nama_ujian}
+                                  </Link>
+                                </HoverCardTrigger>
+
+                                <HoverCardContent className="w-fit rounded-lg p-3">
+                                  <p className="text-xs font-medium text-slate-600">
+                                    Lihat hasil ujian
+                                  </p>
+                                </HoverCardContent>
+                              </HoverCard>
+                            </TableCell>
+
+                            <TableCell className="text-sm text-slate-500">
+                              {useConvertDate(item.created_at_historyExams, {
+                                minute: "numeric",
+                                hour: "numeric",
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                              })}
+                            </TableCell>
+
+                            <TableCell>
+                              {item.hasil_ujian !== "telat" ? (
+                                <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-bold text-emerald-600">
+                                  {item.tipe_ujian === "pg"
+                                    ? `${item.hasil_ujian} / 100`
+                                    : item.hasil_ujian !== "pending"
+                                      ? `${item.hasil_ujian} / 100`
+                                      : "Pending"}
+                                </span>
+                              ) : (
+                                <span className="text-sm font-semibold text-red-500">
+                                  Tidak Ada Nilai
+                                </span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ) : lateExam.length > 0 ? (
+                          <TableRow key={i}>
                             <TableCell
-                              className="text-center text-lg font-bold"
                               colSpan={4}
+                              className="h-24 text-center font-semibold text-red-500"
+                            >
+                              Telat Melakukan Ujian
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          <TableRow key={i}>
+                            <TableCell
+                              colSpan={4}
+                              className="h-24 text-center font-semibold text-slate-400"
                             >
                               Belum Ada Nilai
                             </TableCell>
                           </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
+                        ),
+                      )
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="h-32 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <BarChart3 className="size-8 text-slate-300" />
+
+                            <p className="mt-2 font-semibold text-slate-500">
+                              Belum Ada Nilai
+                            </p>
+
+                            <p className="text-sm text-slate-400">
+                              Hasil ujian akan muncul setelah Anda menyelesaikan
+                              ujian.
+                            </p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-            </div>
+            </section>
           </div>
         </>
       ) : (
         <>
-          <div className="flex justify-between items-center">
-            <div className="w-1/3 h-7 max-[640px]:w-1/2 bg-slate-500 animate-pulse rounded-md"></div>
-            <div className="w-7 h-7 bg-slate-500 animate-pulse rounded-md"></div>
-          </div>
-          <div className="h-1 bg-slate-500 animate-pulse rounded-lg mt-3" />
-          <div className="mt-5 flex items-center gap-x-7">
-            <div className="h-36 sm:w-1/4 md:w-1/6 max-[640px]:w-1/3 max-[640px]:h-28 rounded-full bg-slate-500 animate-pulse"></div>
-            <div className="w-2/3 h-28 flex flex-col justify-center">
-              <div className="w-2/3 h-7 rounded-md bg-slate-500 animate-pulse"></div>
-              <div className="mt-2 h-5 rounded-md bg-slate-500 animate-pulse w-1/3"></div>
-            </div>
-          </div>
-          <div className="mt-5">
-            <div className="w-1/2 max-[640px]:w-3/4 h-7 bg-slate-500 animate-pulse rounded-md"></div>
-            <div className="w-full mt-8">
-              <div className="flex justify-around items-center">
-                <div className="bg-slate-500 animate-pulse w-1/5 max-[640px]:w-1/3 rounded-lg p-5 max-[640px]:p-3 flex flex-col justify-center items-center gap-y-2">
-                  <div className="w-3/4 h-6 bg-slate-400 animate-pulse rounded-md"></div>
-                  <div className="w-10/12 h-6 bg-slate-400 animate-pulse rounded-md"></div>
-                  <div className="w-1/2 h-6 bg-slate-400 animate-pulse rounded-md"></div>
-                </div>
-                <div className="bg-slate-500 animate-pulse w-1/5 max-[640px]:w-1/3 rounded-lg p-5 max-[640px]:p-3 flex flex-col justify-center items-center gap-y-2">
-                  <div className="w-3/4 h-6 bg-slate-400 animate-pulse rounded-md"></div>
-                  <div className="w-10/12  h-6 bg-slate-400 animate-pulse rounded-md"></div>
-                  <div className="w-1/2 h-6 bg-slate-400 animate-pulse rounded-md"></div>
-                </div>
-              </div>
-              <div className="mt-10">
-                <div className="mb-7">
-                  <div className="bg-slate-500 animate-pulse rounded-md py-3 mb-5 flex items-center max-[640px]:pl-0 max-[640px]:py-2 justify-center">
-                    <span className="max-[640px]:basis-1/2 sm:basis-2/5 h-5 bg-slate-500 animate-pulse rounded-md"></span>
-                  </div>
-                  <div className="w-full rounded-md">
-                    <div className="bg-slate-500 animate-pulse w-2/3 h-6 rounded-md mb-1"></div>
-                    <div className="bg-slate-500 animate-pulse w-1/2 h-6 rounded-md mb-1"></div>
-                    <div className="bg-slate-500 animate-pulse w-3/4 h-6 rounded-md mb-1"></div>
-                    <div className="bg-slate-500 animate-pulse w-1/3 h-6 rounded-md mb-1"></div>
-                  </div>
-                  <div className="bg-slate-500 animate-pulse rounded-md mt-10 py-3 mb-5 flex items-center max-[640px]:pl-0 max-[640px]:py-2 justify-center">
-                    <span className="max-[640px]:basis-1/2 sm:basis-2/5 h-5 bg-slate-500 animate-pulse rounded-md"></span>
-                  </div>
-                  <div className="w-full rounded-md">
-                    <div className="bg-slate-500 animate-pulse w-2/3 h-6 rounded-md mb-1"></div>
-                    <div className="bg-slate-500 animate-pulse w-1/2 h-6 rounded-md mb-1"></div>
-                    <div className="bg-slate-500 animate-pulse w-3/4 h-6 rounded-md mb-1"></div>
-                    <div className="bg-slate-500 animate-pulse w-1/3 h-6 rounded-md mb-1"></div>
-                  </div>
-                </div>
+          {/* ==================== HEADER ==================== */}
+          <section className="relative overflow-hidden rounded-3xl bg-slate-200 p-6 animate-pulse sm:p-8">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+              {/* Profile */}
+              <div className="size-20 shrink-0 rounded-full bg-slate-300 sm:size-24" />
+
+              {/* Heading */}
+              <div className="w-full max-w-xl">
+                <div className="h-3 w-28 rounded bg-slate-300" />
+
+                <div className="mt-3 h-8 w-56 rounded-md bg-slate-300 sm:h-9" />
+
+                <div className="mt-3 h-4 w-full max-w-md rounded bg-slate-300" />
+                <div className="mt-2 h-4 w-3/4 max-w-sm rounded bg-slate-300" />
               </div>
             </div>
-          </div>
+          </section>
+
+          {/* ==================== SUMMARY ==================== */}
+          <section className="mt-8">
+            {/* Heading */}
+            <div>
+              <div className="h-3 w-24 rounded bg-slate-200 animate-pulse" />
+
+              <div className="mt-2 h-7 w-48 rounded-md bg-slate-200 animate-pulse" />
+
+              <div className="mt-2 h-4 w-80 max-w-full rounded bg-slate-100 animate-pulse" />
+            </div>
+
+            {/* Statistic Cards */}
+            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {[1, 2].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                >
+                  <div className="flex items-start justify-between animate-pulse">
+                    <div className="w-full">
+                      <div className="h-4 w-32 rounded bg-slate-200" />
+
+                      <div className="mt-3 h-9 w-16 rounded-md bg-slate-200" />
+
+                      <div className="mt-2 h-3 w-44 rounded bg-slate-100" />
+                    </div>
+
+                    <div className="size-12 shrink-0 rounded-xl bg-slate-100" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ==================== DEADLINE ==================== */}
+          <section className="mt-8">
+            <div className="mb-4 animate-pulse">
+              <div className="h-3 w-28 rounded bg-slate-200" />
+              <div className="mt-2 h-7 w-60 rounded-md bg-slate-200" />
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-4 animate-pulse">
+                  <div className="size-12 shrink-0 rounded-xl bg-slate-200" />
+
+                  <div className="w-full">
+                    <div className="h-3 w-28 rounded bg-slate-100" />
+
+                    <div className="mt-2 h-6 w-60 max-w-full rounded-md bg-slate-200" />
+
+                    <div className="mt-2 h-4 w-44 rounded bg-slate-100" />
+                  </div>
+                </div>
+
+                <div className="h-11 w-full rounded-xl bg-slate-200 animate-pulse sm:w-32" />
+              </div>
+            </div>
+          </section>
+
+          {/* ==================== AVAILABLE EXAMS ==================== */}
+          <section className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            {/* Section Header */}
+            <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
+              <div className="flex items-center justify-between">
+                <div className="animate-pulse">
+                  <div className="h-6 w-40 rounded-md bg-slate-200" />
+                  <div className="mt-2 h-3 w-64 max-w-full rounded bg-slate-100" />
+                </div>
+
+                <div className="hidden h-7 w-20 rounded-full bg-slate-100 animate-pulse sm:block" />
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <div className="min-w-[760px] animate-pulse">
+                {/* Table Header */}
+                <div className="grid grid-cols-[60px_2fr_1.5fr_1.5fr_1.2fr] gap-4 bg-slate-50 px-5 py-4">
+                  <div className="h-4 rounded bg-slate-200" />
+                  <div className="h-4 rounded bg-slate-200" />
+                  <div className="h-4 rounded bg-slate-200" />
+                  <div className="h-4 rounded bg-slate-200" />
+                  <div className="h-4 rounded bg-slate-200" />
+                </div>
+
+                {/* Rows */}
+                {[1, 2, 3, 4, 5].map((row) => (
+                  <div
+                    key={row}
+                    className="grid grid-cols-[60px_2fr_1.5fr_1.5fr_1.2fr] gap-4 border-t border-slate-100 px-5 py-5"
+                  >
+                    <div className="h-4 w-6 rounded bg-slate-100" />
+                    <div className="h-4 w-40 rounded bg-slate-100" />
+                    <div className="h-4 w-28 rounded bg-slate-100" />
+                    <div className="h-4 w-32 rounded bg-slate-100" />
+                    <div className="h-6 w-24 rounded-full bg-slate-100" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ==================== RECENT SCORES ==================== */}
+          <section className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            {/* Section Header */}
+            <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
+              <div className="animate-pulse">
+                <div className="h-6 w-36 rounded-md bg-slate-200" />
+                <div className="mt-2 h-3 w-72 max-w-full rounded bg-slate-100" />
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <div className="min-w-[650px] animate-pulse">
+                {/* Table Header */}
+                <div className="grid grid-cols-[60px_2fr_1.5fr_1fr] gap-4 bg-slate-50 px-5 py-4">
+                  <div className="h-4 rounded bg-slate-200" />
+                  <div className="h-4 rounded bg-slate-200" />
+                  <div className="h-4 rounded bg-slate-200" />
+                  <div className="h-4 rounded bg-slate-200" />
+                </div>
+
+                {/* Rows */}
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-[60px_2fr_1.5fr_1fr] gap-4 border-t border-slate-100 px-5 py-5"
+                  >
+                    <div className="h-4 w-6 rounded bg-slate-100" />
+
+                    <div className="h-4 w-44 rounded bg-slate-100" />
+
+                    <div className="h-4 w-32 rounded bg-slate-100" />
+
+                    <div className="h-6 w-20 rounded-full bg-slate-100" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
         </>
       )}
     </MainContent>
