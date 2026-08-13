@@ -13,7 +13,9 @@ import CompFiturUnggulan from "@/components/local/beranda/fiturUnggulan/content"
 import CompAlurUjian from "@/components/local/beranda/alurUjian/content";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import {
+  ArrowRight,
   Award,
+  CheckCircle2,
   ChevronDown,
   LogIn,
   MousePointerClick,
@@ -38,38 +40,95 @@ export default function Introduction() {
 
   return (
     <Homepage>
-      <div className="heroSectionImg flex items-center">
-        <div className="relative tracking-wide px-5 lg:px-14 w-full">
-          <div className="flex flex-col gap-4 max-w-lg mb-5">
-            <h1 className="text-4xl sm:text-5xl font-bold">
-              Platform Ujian Online
-            </h1>
-            <p className="text-lg sm:text-xl font-semibold">
-              Ikuti Ujian Online Bisa Dikerjakan Dimana Saja, Mudah dan Cepat
-            </p>
-            <Link
-              href={
-                getidUsers.includes("pelajar")
-                  ? "/Student/Dashboard"
-                  : getidUsers.includes("pengajar")
-                    ? "/Teacher/dashboard"
-                    : "/Auth/Login"
-              }
-              className="text-center bg-blue-400 hover:text-blue-50 rounded-md py-2 text-lg font-semibold cursor-pointer inline-block shadow-md shadow-slate-600 w-32"
-            >
-              Mulai
-            </Link>
-          </div>
-          <Link href="#content" className="cursor-pointer">
-            <span className="font-semibold text-lg mr-2">
-              Pelajari Lebih Lanjut Dibawah ini
-            </span>
-            <ChevronDown className="inline animate-bounce size-6" />
-          </Link>
-        </div>
-      </div>
+      <header className="relative flex items-center overflow-hidden pt-10">
+        {/* Background Image */}
+        <Image
+          src="/img/beranda/heroSectionUjian.jpg"
+          alt="Platform ujian online"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
 
-      <div className="bg-slate-50 bg-linear-to-b from-slate-100">
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/30" />
+
+        {/* Soft Bottom Gradient */}
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white to-transparent" />
+
+        {/* Hero Content */}
+        <div className="relative z-10 w-full">
+          <div className="mx-auto w-full max-w-7xl px-6 py-20 lg:px-10">
+            <div className="max-w-2xl">
+              {/* Small Badge */}
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50/90 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm backdrop-blur-sm">
+                Platform Ujian Online
+              </div>
+
+              {/* Heading */}
+              <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                Ujian Online
+                <span className="block text-blue-600">
+                  Mudah, Cepat & Fleksibel
+                </span>
+              </h1>
+
+              {/* Description */}
+              <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
+                Ikuti ujian kapan saja dan di mana saja dengan sistem ujian
+                online yang praktis, mudah digunakan, dan dirancang untuk
+                memberikan pengalaman belajar yang lebih nyaman.
+              </p>
+
+              {/* CTA */}
+              <div className="mt-8 flex gap-4 items-center">
+                <Link
+                  href={
+                    getidUsers.includes("pelajar")
+                      ? "/Student/Dashboard"
+                      : getidUsers.includes("pengajar")
+                        ? "/Teacher/dashboard"
+                        : "/Auth/Login"
+                  }
+                  className="group inline-flex w-fit items-center justify-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/30"
+                >
+                  Mulai Ujian
+                  <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+
+                <Link
+                  href="#content"
+                  className="inline-flex w-fit items-center gap-2 rounded-xl px-4 py-3.5 text-base font-semibold text-slate-700 transition-colors hover:text-blue-600"
+                >
+                  Pelajari lebih lanjut
+                  <ChevronDown className="size-5 animate-bounce" />
+                </Link>
+              </div>
+
+              {/* Small Trust Info */}
+              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-500">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="size-4 text-blue-600" />
+                  Mudah digunakan
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="size-4 text-blue-600" />
+                  Bisa diakses kapan saja
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="size-4 text-blue-600" />
+                  Proses cepat
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section className="bg-slate-50 bg-linear-to-b from-slate-100">
         <div className="mx-auto w-10/12 py-14" id="content">
           <h1 className="text-4xl font-bold mb-12 text-[#0F4C75] tracking-wide">
             Fitur Unggulan
@@ -103,19 +162,7 @@ export default function Introduction() {
             />
           </div>
         </div>
-      </div>
-
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 1440 320"
-        className="absolute"
-      >
-        <path
-          fill="#f8fafc"
-          fillOpacity="1"
-          d="M0,128L48,138.7C96,149,192,171,288,165.3C384,160,480,128,576,106.7C672,85,768,75,864,90.7C960,107,1056,149,1152,149.3C1248,149,1344,107,1392,85.3L1440,64L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
-        ></path>
-      </svg>
+      </section>
 
       <div className="bg-blue-100 pt-14 sm:pt-20 lg:pt-32">
         <div className="mx-auto py-16 w-10/12">
