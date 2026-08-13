@@ -30,17 +30,6 @@ import FiturUnggulan from "@/components/local/beranda/fiturUnggulan/content";
 
 export default function Introduction() {
   const getidUsers = useGetIdUsers((state) => state.role);
-  const [isSizeMobile, setIsSizeMobile] = useState(false);
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 640px)");
-    function handler(e: MediaQueryListEvent | MediaQueryList) {
-      setIsSizeMobile(e.matches);
-    }
-
-    handler(mediaQuery);
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
-  }, []);
 
   return (
     <Homepage>
@@ -142,7 +131,7 @@ export default function Introduction() {
         <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-10">
           {/* Section Heading */}
           <div className="mb-10">
-            <h2 className="text-3xl font-extrabold text-slate-900 sm:text-4xl lg:text-5xl">
+            <h2 className="text-3xl font-extrabold text-slate-900 sm:text-4xl">
               Fitur Unggulan
             </h2>
 
@@ -181,63 +170,192 @@ export default function Introduction() {
         </div>
       </section>
 
-      <section className="bg-blue-100 pt-14 sm:pt-20 lg:pt-32">
-        <div className="mx-auto py-16 w-10/12">
-          <h1 className="text-4xl font-bold mb-5 text-[#0F4C75] tracking-wide">
-            Tampilan Sistem
-          </h1>
-          <div>
-            <h2 className="text-xl font-semibold text-justify tracking-wide">
-              Antarmuka yang bersih memudahkan peserta untuk mengerjakan soal
+      <section
+        id="system-preview"
+        className="relative overflow-hidden bg-gradient-to-b from-blue-50 via-slate-50 to-white"
+      >
+        {/* Decorative Background */}
+        <div className="pointer-events-none absolute -left-40 top-20 size-96 rounded-full bg-blue-200/30 blur-3xl" />
+        <div className="pointer-events-none absolute -right-40 bottom-20 size-96 rounded-full bg-sky-200/30 blur-3xl" />
+
+        <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-10">
+          {/* Heading */}
+          <div className="mb-10">
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+              Tampilan Sistem
             </h2>
+
+            <p className="mt-4 text-base leading-relaxed text-slate-500 sm:text-lg">
+              Antarmuka yang bersih dan sederhana membantu peserta mengerjakan
+              ujian dengan lebih fokus dan nyaman.
+            </p>
+          </div>
+
+          {/* Carousel */}
+          <div className="mx-auto mt-12 max-w-5xl sm:mt-16">
             <Carousel
               opts={{
-                align: "start",
+                align: "center",
+                loop: true,
               }}
-              orientation={isSizeMobile ? "vertical" : "horizontal"}
-              className="mt-20 sm:mt-10"
+              className="w-full"
             >
-              <CarouselContent className="max-h-60 sm:max-h-56 md:max-h-72 lg:max-h-96">
-                <CarouselItem className="flex items-center justify-center p-5">
-                  <Image
-                    src="/img/beranda/dashboardSiswa.jpeg"
-                    alt="Dashboard Page"
-                    width={500}
-                    height={500}
-                    className="shadow-lg shadow-slate-700 w-full sm:w-2/3 rounded-md"
-                  />
+              <CarouselContent>
+                {/* Dashboard */}
+                <CarouselItem className="basis-full">
+                  <div className="px-2 sm:px-8">
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40">
+                      <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3">
+                        <span className="size-2.5 rounded-full bg-red-400" />
+                        <span className="size-2.5 rounded-full bg-yellow-400" />
+                        <span className="size-2.5 rounded-full bg-green-400" />
+
+                        <span className="ml-3 text-sm font-medium text-slate-500">
+                          Dashboard Siswa
+                        </span>
+                      </div>
+
+                      <div className="relative aspect-video w-full bg-slate-100">
+                        <Image
+                          src="/img/beranda/dashboardSiswa.jpeg"
+                          alt="Dashboard siswa"
+                          fill
+                          sizes="(max-width: 768px) 100vw, 1024px"
+                          className="object-cover object-top"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-5">
+                      <h3 className="text-lg font-bold text-slate-900">
+                        Dashboard Siswa
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Ringkasan aktivitas dan informasi ujian peserta.
+                      </p>
+                    </div>
+                  </div>
                 </CarouselItem>
-                <CarouselItem className="flex items-center justify-center p-5">
-                  <Image
-                    src="/img/beranda/profileSiswa.jpeg"
-                    alt="Profile Page"
-                    width={500}
-                    height={500}
-                    className="shadow-lg shadow-slate-700 w-full sm:w-3/4 rounded-md"
-                  />
+
+                {/* Profile */}
+                <CarouselItem className="basis-full">
+                  <div className="px-2 sm:px-8">
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40">
+                      <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3">
+                        <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
+
+                        <span className="ml-3 text-sm font-medium text-slate-500">
+                          Profile Siswa
+                        </span>
+                      </div>
+
+                      <div className="relative aspect-video w-full bg-slate-100">
+                        <Image
+                          src="/img/beranda/profileSiswa.jpeg"
+                          alt="Profile siswa"
+                          fill
+                          sizes="(max-width: 768px) 100vw, 1024px"
+                          className="object-cover object-top"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-5">
+                      <h3 className="text-lg font-bold text-slate-900">
+                        Profile Siswa
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Kelola informasi profil peserta dengan mudah.
+                      </p>
+                    </div>
+                  </div>
                 </CarouselItem>
-                <CarouselItem className="flex items-center justify-center p-5">
-                  <Image
-                    src="/img/beranda/ujian.jpeg"
-                    alt="Ujian Page"
-                    width={500}
-                    height={500}
-                    className="shadow-lg shadow-slate-700 w-full sm:w-3/4 rounded-md"
-                  />
+
+                {/* Exam */}
+                <CarouselItem className="basis-full">
+                  <div className="px-2 sm:px-8">
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40">
+                      <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3">
+                        <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
+
+                        <span className="ml-3 text-sm font-medium text-slate-500">
+                          Halaman Ujian
+                        </span>
+                      </div>
+
+                      <div className="relative aspect-video w-full bg-slate-100">
+                        <Image
+                          src="/img/beranda/ujian.jpeg"
+                          alt="Halaman ujian"
+                          fill
+                          sizes="(max-width: 768px) 100vw, 1024px"
+                          className="object-cover object-top"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-5">
+                      <h3 className="text-lg font-bold text-slate-900">
+                        Halaman Ujian
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Kerjakan soal dengan tampilan yang fokus dan sederhana.
+                      </p>
+                    </div>
+                  </div>
                 </CarouselItem>
-                <CarouselItem className="flex items-center justify-center p-5">
-                  <Image
-                    src="/img/beranda/riwayatUjian.jpeg"
-                    alt="Riwayat Ujian Page"
-                    width={500}
-                    height={500}
-                    className="shadow-lg shadow-slate-700 w-full sm:w-3/4 rounded-md"
-                  />
+
+                {/* History */}
+                <CarouselItem className="basis-full">
+                  <div className="px-2 sm:px-8">
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-300/40">
+                      <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3">
+                        <span className="size-2.5 rounded-full bg-red-400" />
+                        <span className="size-2.5 rounded-full bg-yellow-400" />
+                        <span className="size-2.5 rounded-full bg-green-400" />
+
+                        <span className="ml-3 text-sm font-medium text-slate-500">
+                          Riwayat Ujian
+                        </span>
+                      </div>
+
+                      <div className="relative aspect-video w-full bg-slate-100">
+                        <Image
+                          src="/img/beranda/riwayatUjian.jpeg"
+                          alt="Riwayat ujian"
+                          fill
+                          sizes="(max-width: 768px) 100vw, 1024px"
+                          className="object-cover object-top"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-5">
+                      <h3 className="text-lg font-bold text-slate-900">
+                        Riwayat Ujian
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Lihat kembali hasil dan riwayat ujian yang telah
+                        dikerjakan.
+                      </p>
+                    </div>
+                  </div>
                 </CarouselItem>
               </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
+
+              {/* Navigation */}
+              <CarouselPrevious className="left-0 hidden sm:flex" />
+              <CarouselNext className="right-0 hidden sm:flex" />
             </Carousel>
+
+            {/* Mobile Navigation Hint */}
+            <div className="mt-8 flex justify-center text-sm text-slate-400 sm:hidden">
+              Geser untuk melihat tampilan lainnya
+            </div>
           </div>
         </div>
       </section>
