@@ -2,6 +2,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import HamburgerMenu from "@/components/global/hamburgerMenu/content";
 import ListSidebar from "@/components/global/listSidebar/content";
 import { Bell } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 type PropsHeaderDashboard = {
   remainder: any[];

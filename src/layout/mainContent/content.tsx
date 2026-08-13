@@ -6,6 +6,21 @@ import { usePathname } from "next/navigation";
 import ListSidebar from "@/components/global/listSidebar/content";
 import { useShallow } from "zustand/shallow";
 import DialogFormAddDataUser from "@/components/global/dialogTipeAkun/content";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Home, LayoutDashboard, LogOut, Menu, User2 } from "lucide-react";
+import { useHandleLogout } from "@/app/hooks/getHandleLogout";
 
 export default function MainContent({ children }: React.PropsWithChildren) {
   const { loadingSession, statusToken } = useVerifyToken();
@@ -35,23 +50,27 @@ export default function MainContent({ children }: React.PropsWithChildren) {
     <div className="bg-black">
       <DialogFormAddDataUser idUsers={idUsers} />
       <div
-        className={`bg-blue-100 flex ${
-          loadingSession && `opacity-50 animate-pulse`
+        className={`min-h-screen bg-slate-50 ${
+          loadingSession ? "pointer-events-none opacity-60" : ""
         }`}
       >
         {pathName === "/Student/Exams/StartExam" ? (
           children
         ) : (
-          <>
-            <div className="md:w-1/4 lg:w-1/5 hidden md:block">
-              <div className="bg-slate-50 md:w-1/4 lg:w-1/5 fixed h-screen shadow-xl shadow-slate-700 flex flex-col items-center pt-14 font-medium text-xl">
-                <ListSidebar />
+          <div className="min-h-screen">
+            {/* Sidebar */}
+            <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-slate-200 bg-white md:flex md:flex-col">
+              <ListSidebar />
+            </aside>
+
+            {/* Main Content */}
+            <main className="min-h-screen md:ml-64">
+              {/* Page Content */}
+              <div className="mx-auto w-full max-w-7xl px-5 py-6 sm:px-6 lg:px-8 lg:py-8">
+                {children}
               </div>
-            </div>
-            <div className="w-11/12 mx-auto md:w-2/3 lg:w-3/4 my-10">
-              {children}
-            </div>
-          </>
+            </main>
+          </div>
         )}
       </div>
     </div>
