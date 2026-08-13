@@ -4,17 +4,6 @@ import Link from "next/link";
 export default function FooterComponent() {
   return (
     <footer className="bg-blue-100">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="absolute"
-        viewBox="0 0 1440 320"
-      >
-        <path
-          fill="#f3f4f6"
-          fillOpacity="1"
-          d="M0,256L34.3,224C68.6,192,137,128,206,133.3C274.3,139,343,213,411,234.7C480,256,549,224,617,224C685.7,224,754,256,823,250.7C891.4,245,960,203,1029,170.7C1097.1,139,1166,117,1234,122.7C1302.9,128,1371,160,1406,176L1440,192L1440,0L1405.7,0C1371.4,0,1303,0,1234,0C1165.7,0,1097,0,1029,0C960,0,891,0,823,0C754.3,0,686,0,617,0C548.6,0,480,0,411,0C342.9,0,274,0,206,0C137.1,0,69,0,34,0L0,0Z"
-        ></path>
-      </svg>
       <div className="pt-36 sm:pt-44 md:pt-52 lg:pt-64 grid pb-10 w-10/12 gap-10 mx-auto grid-cols-1 md:grid-cols-2">
         <div>
           <Image

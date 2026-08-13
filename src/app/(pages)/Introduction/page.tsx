@@ -8,13 +8,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useEffect, useState } from "react";
-import CompAlurUjian from "@/components/local/beranda/alurUjian/content";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import {
   ArrowRight,
   Award,
-  ChartNoAxesColumnIncreasing,
   CheckCircle2,
   ChevronDown,
   CircleCheck,
@@ -27,6 +24,7 @@ import {
 } from "lucide-react";
 import Homepage from "@/layout/homepage/content";
 import FiturUnggulan from "@/components/local/beranda/fiturUnggulan/content";
+import AlurUjian from "@/components/local/beranda/alurUjian/content";
 
 export default function Introduction() {
   const getidUsers = useGetIdUsers((state) => state.role);
@@ -181,7 +179,7 @@ export default function Introduction() {
         <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-10">
           {/* Heading */}
           <div className="mb-10">
-            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
               Tampilan Sistem
             </h2>
 
@@ -360,59 +358,59 @@ export default function Introduction() {
         </div>
       </section>
 
-      <div className="bg-slate-50 bg-linear-to-t from-slate-100 pt-32 sm:pt-40 md:pt-52">
-        <div className="mx-auto w-10/12 lg:w-2/3">
-          <div className="flex items-center gap-x-5 mb-5">
-            <Route className="size-10" />
-            <h1 className="text-4xl font-bold text-[#0F4C75] tracking-wide">
+      <section className="relative overflow-hidden bg-gradient-to-t from-white via-slate-50 to-slate-100">
+        <div className="relative mx-auto max-w-7xl px-6 py-16 lg:px-10">
+          {/* Heading */}
+          <div className="mb-10">
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
               Alur Ujian
-            </h1>
+            </h2>
+
+            <p className="mt-4 text-base leading-relaxed text-slate-500 sm:text-lg">
+              Ikuti beberapa langkah sederhana untuk memulai, mengerjakan,
+              hingga mendapatkan hasil ujian Anda.
+            </p>
           </div>
-          <CompAlurUjian>
-            <div className="flex gap-3 items-center">
-              <h1 className="font-bold text-2xl tracking-wide">
-                Daftar / Login
-              </h1>
-              <LogIn className="size-8" />
+
+          {/* Timeline */}
+          <div className="relative">
+            {/* Vertical Line */}
+            <div className="absolute left-6 top-8 bottom-8 w-px bg-blue-200 sm:left-1/2 sm:-translate-x-1/2" />
+
+            <div className="space-y-10 sm:space-y-12">
+              <AlurUjian
+                step="01"
+                title="Daftar / Login"
+                description="Buat akun baru atau masuk dengan akun yang sudah ada untuk mengakses sistem ujian online."
+                Icon={LogIn}
+              />
+
+              <AlurUjian
+                step="02"
+                title="Pilih Ujian"
+                description="Telusuri dan pilih ujian yang tersedia sesuai jadwal yang ingin Anda ikuti."
+                Icon={MousePointerClick}
+                reverse
+              />
+
+              <AlurUjian
+                step="03"
+                title="Kerjakan Ujian"
+                description="Kerjakan soal secara online melalui antarmuka yang sederhana dengan navigasi soal yang mudah digunakan."
+                Icon={PencilLine}
+              />
+
+              <AlurUjian
+                step="04"
+                title="Lihat Nilai"
+                description="Setelah selesai, langsung dapatkan hasil ujian dan nilai Anda."
+                Icon={Award}
+                reverse
+              />
             </div>
-            <h2 className="font-semibold mt-3 text-justify text-[#393E46] text-lg sm:text-xl">
-              Buat akun baru atau masuk dengan akun yang sudah ada untuk
-              mengakses sistem ujian online
-            </h2>
-          </CompAlurUjian>
-          <CompAlurUjian>
-            <div className="flex gap-3 items-center">
-              <h1 className="font-bold text-2xl tracking-wide">Pilih Ujian</h1>
-              <MousePointerClick className="size-8" />
-            </div>
-            <h2 className="font-semibold mt-3 text-justify text-[#393E46] text-lg sm:text-xl">
-              Telusuri dan pilih ujian yang tersedia sesuai jadwal yang ingin
-              Anda ikuti
-            </h2>
-          </CompAlurUjian>
-          <CompAlurUjian>
-            <div className="flex gap-3 items-center">
-              <h1 className="font-bold text-2xl tracking-wide">
-                Kerjakan Ujiannya
-              </h1>
-              <PencilLine className="size-8" />
-            </div>
-            <h2 className="font-semibold mt-3 text-justify text-[#393E46] text-lg sm:text-xl">
-              Kerjakan soal secara online melalui antarmuka yang sederhana,
-              didukung dengan navigasi soal
-            </h2>
-          </CompAlurUjian>
-          <CompAlurUjian>
-            <div className="flex gap-3 items-center">
-              <h1 className="font-bold text-2xl tracking-wide">Lihat Nilai</h1>
-              <Award className="size-8" />
-            </div>
-            <h2 className="font-semibold mt-3 text-justify text-[#393E46] text-lg sm:text-xl">
-              Setelah selesai, langsung dapatkan hasil ujian dan nilai anda
-            </h2>
-          </CompAlurUjian>
+          </div>
         </div>
-      </div>
+      </section>
     </Homepage>
   );
 }
