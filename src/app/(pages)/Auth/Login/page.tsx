@@ -1,7 +1,6 @@
 "use client";
 import { useHandleInput } from "@/app/hooks/getHandleInput";
 import FloatingLabel from "@/components/global/floatingLabel/content";
-import FormButton from "@/components/local/authFormInput/formButton/content";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,22 +10,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import FormAuth from "@/layout/formAuth/content";
-import {
-  AtSign,
-  Book,
-  BookOpen,
-  GraduationCap,
-  Key,
-  KeyRound,
-  User,
-  UserRound,
-} from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AtSign, Book, GraduationCap, KeyRound } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const inputLoginSchema = z.object({
+  typeAccount: z.string().min(1, "Pilih tipe akun terlebih dahulu"),
+  email: z.email().min(5, "Minimal 5 karakter"),
+  password: z.string().min(1, "Password tidak boleh kosong"),
+});
+
+type InputLogin = z.infer<typeof inputLoginSchema>;
 
 export default function LoginAccount() {
+  const {
+    control,
+    register,
+    watch,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<InputLogin>({
+    resolver: zodResolver(inputLoginSchema),
+  });
+
+  async function onSubmit(data: InputLogin) {
+    console.log(data);
+  }
+
   const { push } = useRouter();
   const [valueTypeAccount, setValueTypeAccount] = useState<string>("");
   const { formMustFilled, handleValueInput, isFormFilled } = useHandleInput({
@@ -85,32 +100,40 @@ export default function LoginAccount() {
   return (
     <FormAuth formTitle={"Login"}>
       {/* Form */}
-      <form className="flex flex-col gap-5" onSubmit={(e) => handleLogin(e)}>
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)}>
         {/* Account Type */}
-        <Select onValueChange={(val) => setValueTypeAccount(val)}>
-          <SelectTrigger
-            id="accountType"
-            className="w-full rounded-lg border-slate-200 bg-slate-50 px-4 shadow-none transition-all focus:border-blue-500 focus:ring-blue-500"
-          >
-            <SelectValue placeholder="Pilih jenis akun" />
-          </SelectTrigger>
+        <Controller
+          control={control}
+          name="typeAccount"
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} value={field.value}>
+              <SelectTrigger
+                id="accountType"
+                className="w-full rounded-lg border-slate-200 bg-slate-50 px-4 shadow-none transition-all focus:border-blue-500 focus:ring-blue-500"
+              >
+                <SelectValue placeholder="Pilih jenis akun" />
+              </SelectTrigger>
 
-          <SelectContent className="rounded-lg border-slate-200 bg-white">
-            <SelectItem value="guru">
-              <GraduationCap className="size-5" /> Guru
-            </SelectItem>
-            <SelectItem value="siswa">
-              <Book className="size-4.5" />
-              Siswa
-            </SelectItem>
-          </SelectContent>
-        </Select>
+              <SelectContent className="rounded-lg border-slate-200 bg-white">
+                <SelectItem value="guru">
+                  <GraduationCap className="size-5" /> Guru
+                </SelectItem>
+                <SelectItem value="siswa">
+                  <Book className="size-4.5" />
+                  Siswa
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        />
 
         {/* Email */}
         <FloatingLabel
           type="email"
           id="email"
           label="Email"
+          error={errors.email}
+          register={register("email")}
           placeholder=" "
           Icon={AtSign}
         />
@@ -119,6 +142,8 @@ export default function LoginAccount() {
         <FloatingLabel
           type="password"
           id="password"
+          error={errors.password}
+          register={register("password")}
           label="Password"
           placeholder=" "
           Icon={KeyRound}

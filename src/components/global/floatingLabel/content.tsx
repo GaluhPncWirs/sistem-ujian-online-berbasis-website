@@ -1,20 +1,21 @@
 import { Input } from "@/components/ui/input";
 import { LucideIcon } from "lucide-react";
 import { HTMLInputTypeAttribute } from "react";
+import { FieldError, UseFormRegisterReturn } from "react-hook-form";
 
 type PropsFloatingLabel = {
   type: HTMLInputTypeAttribute | undefined;
   id: string;
   label: string;
-  //   register?: UseFormRegisterReturn;
-  //   error?: FieldError;
+  register?: UseFormRegisterReturn;
+  error?: FieldError;
   Icon?: LucideIcon | undefined;
   desc?: string;
   placeholder?: string;
 };
 
 export default function FloatingLabel(props: PropsFloatingLabel) {
-  const { type, id, label, desc, placeholder, Icon } = props;
+  const { type, id, label, desc, placeholder, Icon, register, error } = props;
   return (
     <>
       <div className="relative">
@@ -22,7 +23,7 @@ export default function FloatingLabel(props: PropsFloatingLabel) {
           type={type}
           id={id}
           placeholder={placeholder}
-          //   {...register}
+          {...register}
           className="peer h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-14 text-sm font-medium text-slate-800 outline-none transition-all hover:border-slate-300 focus:border-blue-500 focus:bg-slate-50 focus:ring-4 focus:ring-blue-500/10 focus-visible:outline-none focus-visible:ring-0"
         />
         <label
@@ -37,7 +38,7 @@ export default function FloatingLabel(props: PropsFloatingLabel) {
           </span>
         )}
       </div>
-      {/* {error && <p className="text-red-500 text-xs mt-0.5">{error.message}</p>} */}
+      {error && <p className="text-red-500 text-xs mt-0.5">{error.message}</p>}
     </>
   );
 }
