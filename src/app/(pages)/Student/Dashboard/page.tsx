@@ -40,29 +40,85 @@ import {
   getCurrentTimeInMinutes,
   getDateKey,
 } from "@/lib/utils/convertDate";
-import { promise } from "zod";
+
+const MONTHS_ID: Record<string, number> = {
+  Januari: 0,
+  Februari: 1,
+  Maret: 2,
+  April: 3,
+  Mei: 4,
+  Juni: 5,
+  Juli: 6,
+  Agustus: 7,
+  September: 8,
+  Oktober: 9,
+  November: 10,
+  Desember: 11,
+};
+
+function parseIndonesianDate(dateString: string) {
+  const [day, month, year] = dateString.trim().split(" ");
+
+  const monthIndex = MONTHS_ID[month];
+
+  if (!day || !year || monthIndex === undefined) {
+    return null;
+  }
+
+  return {
+    day: Number(day),
+    month: monthIndex,
+    year: Number(year),
+  };
+}
+
+function getTodayIndonesia() {
+  const formatter = new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+  });
+
+  const parts = formatter.formatToParts(new Date());
+
+  return {
+    day: Number(parts.find((part) => part.type === "day")?.value),
+    month: Number(parts.find((part) => part.type === "month")?.value) - 1,
+    year: Number(parts.find((part) => part.type === "year")?.value),
+  };
+}
 
 type ExamStatus = "BELUM_MULAI" | "BERLANGSUNG" | "LEWAT";
 
 function getExamStatus(tenggatWaktu: string, tglUjian: string): ExamStatus {
   const { start, end } = convertToNumber(tenggatWaktu);
 
-  const today = getDateKey(new Date());
-  const examDate = getDateKey(tglUjian);
-  const currentMinute = getCurrentTimeInMinutes();
+  const examDate = parseIndonesianDate(tglUjian);
+  const today = getTodayIndonesia();
 
-  if (!today || !examDate || Number.isNaN(start) || Number.isNaN(end)) {
+  if (!examDate || Number.isNaN(start) || Number.isNaN(end)) {
     return "LEWAT";
   }
 
-  if (examDate > today) {
+  const examDateNumber =
+    examDate.year * 10000 + (examDate.month + 1) * 100 + examDate.day;
+
+  const todayNumber = today.year * 10000 + (today.month + 1) * 100 + today.day;
+
+  const currentMinute = getCurrentTimeInMinutes();
+
+  // Ujian di hari yang akan datang
+  if (examDateNumber > todayNumber) {
     return "BELUM_MULAI";
   }
 
-  if (examDate < today) {
+  // Ujian di hari yang sudah lewat
+  if (examDateNumber < todayNumber) {
     return "LEWAT";
   }
 
+  // Ujian hari ini
   if (currentMinute < start) {
     return "BELUM_MULAI";
   }
@@ -83,6 +139,8 @@ export default function DashboardStudent() {
   const [accepted, setAccepted] = useState<boolean>(false);
   const [lateExam, setLateExam] = useState([]);
 
+  console.log(lateExam);
+
   const filterScoreExams = scheduleExams.filter(
     (exams: { status_exam: boolean; hasil_ujian: string }) => {
       if (!exams.status_exam) return false;
@@ -96,55 +154,61 @@ export default function DashboardStudent() {
     },
   );
 
-  const totalScore = filterScoreExams.reduce((total, exam) => {
-    return total + Number(exam.hasil_ujian);
-  }, 0);
+  const totalScore = filterScoreExams.reduce(
+    (total: number, exam: { hasil_ujian: string }) => {
+      return total + Number(exam.hasil_ujian);
+    },
+    0,
+  );
 
   const averageValue =
     filterScoreExams.length > 0
       ? Math.round((totalScore / filterScoreExams.length) * 100) / 100
       : 0;
 
-  const lateExams = useCallback(async (idUjian: number) => {
-    if (!getIdStudent) return;
+  const lateExams = useCallback(
+    async (idUjian: number) => {
+      if (!getIdStudent) return;
 
-    const { data: existingExam, error: fetchError } = await supabase
-      .from("history-exam-student")
-      .select("id, hasil_ujian, status_exam")
-      .eq("student_id", getIdStudent)
-      .eq("exam_id", Number(idUjian))
-      .maybeSingle();
+      const { data: existingExam, error: fetchError } = await supabase
+        .from("history-exam-student")
+        .select("id, hasil_ujian, status_exam")
+        .eq("student_id", getIdStudent)
+        .eq("exam_id", Number(idUjian))
+        .maybeSingle();
 
-    if (fetchError) {
-      console.error("Gagal mengecek history ujian:", fetchError);
-      return;
-    }
+      if (fetchError) {
+        console.error("Gagal mengecek history ujian:", fetchError);
+        return;
+      }
 
-    if (existingExam) {
-      return;
-    }
+      if (existingExam) {
+        return;
+      }
 
-    const payload = {
-      created_at: new Date().toISOString(),
-      student_id: getIdStudent,
-      exam_id: Number(idUjian),
-      answer_student: null,
-      hasil_ujian: "telat",
-      status_exam: true,
-      kelas: dataStudent?.classes,
-    };
+      const payload = {
+        created_at: new Date().toISOString(),
+        student_id: getIdStudent,
+        exam_id: Number(idUjian),
+        answer_student: null,
+        hasil_ujian: "telat",
+        status_exam: true,
+        kelas: dataStudent?.classes,
+      };
 
-    const { error: insertError } = await supabase
-      .from("history-exam-student")
-      .insert(payload);
+      const { error: insertError } = await supabase
+        .from("history-exam-student")
+        .insert(payload);
 
-    if (insertError) {
-      toast("❌ Gagal Simpan Data", {
-        description: insertError.message,
-      });
-      return;
-    }
-  }, []);
+      if (insertError) {
+        toast("❌ Gagal Simpan Data", {
+          description: insertError.message,
+        });
+        return;
+      }
+    },
+    [scheduleExams],
+  );
 
   useEffect(() => {
     if (!scheduleExams.length) {
@@ -516,7 +580,7 @@ export default function DashboardStudent() {
                                 <span className="inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600">
                                   Lewat Batas Waktu
                                 </span>
-                              ) : (
+                              ) : status === "BERLANGSUNG" ? (
                                 <Dialog>
                                   <DialogTrigger asChild>
                                     <button className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100">
@@ -550,9 +614,10 @@ export default function DashboardStudent() {
                                       </DialogClose>
 
                                       <Button
+                                        type="button"
                                         onClick={() =>
                                           push(
-                                            `/Student/Exams/StartExam?idExams=${data.idExams}`,
+                                            `/Student/Exams/StartExam/${data.idExams}`,
                                           )
                                         }
                                         className="rounded-xl bg-blue-600 hover:bg-blue-700"
@@ -562,7 +627,7 @@ export default function DashboardStudent() {
                                     </DialogFooter>
                                   </DialogContent>
                                 </Dialog>
-                              )}
+                              ) : null}
                             </TableCell>
                           </TableRow>
                         );
@@ -624,11 +689,122 @@ export default function DashboardStudent() {
 
                   <TableBody>
                     {scheduleExams.length > 0 ? (
-                      scheduleExams.map((item: any, i: number) =>
-                        item.status_exam === true &&
-                        item.hasil_ujian !== "telat" ? (
+                      scheduleExams.map((item: any, i: number) => {
+                        const isCompleted = item.status_exam === true;
+                        const isLate = item.hasil_ujian === "telat";
+                        const isPending = item.hasil_ujian === "pending";
+
+                        // =========================
+                        // UJIAN TELAT
+                        // =========================
+                        if (isLate) {
+                          return (
+                            <TableRow
+                              key={item.idExams ?? i}
+                              className="transition-colors hover:bg-slate-50"
+                            >
+                              <TableCell className="font-medium text-slate-500">
+                                {i + 1}
+                              </TableCell>
+
+                              <TableCell>
+                                <span className="font-semibold text-slate-800">
+                                  {item.exams.nama_ujian}
+                                </span>
+                              </TableCell>
+
+                              <TableCell className="text-sm text-slate-500">
+                                {item.created_at_historyExams
+                                  ? useConvertDate(
+                                      item.created_at_historyExams,
+                                      {
+                                        minute: "numeric",
+                                        hour: "numeric",
+                                        day: "numeric",
+                                        month: "long",
+                                        year: "numeric",
+                                      },
+                                    )
+                                  : "-"}
+                              </TableCell>
+
+                              <TableCell>
+                                <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-sm font-bold text-red-600">
+                                  Tidak Ada Nilai
+                                </span>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        }
+
+                        // =========================
+                        // UJIAN SUDAH DIKERJAKAN
+                        // =========================
+                        if (isCompleted) {
+                          return (
+                            <TableRow
+                              key={item.idExams ?? i}
+                              className="transition-colors hover:bg-slate-50"
+                            >
+                              <TableCell className="font-medium text-slate-500">
+                                {i + 1}
+                              </TableCell>
+
+                              <TableCell>
+                                <HoverCard openDelay={200} closeDelay={200}>
+                                  <HoverCardTrigger asChild>
+                                    <Link
+                                      href={`/Student/Dashboard/ResultExam/${item.idExams}`}
+                                      className="font-semibold text-slate-800 transition-colors hover:text-blue-600 hover:underline"
+                                    >
+                                      {item.exams.nama_ujian}
+                                    </Link>
+                                  </HoverCardTrigger>
+
+                                  <HoverCardContent className="w-fit rounded-lg p-3">
+                                    <p className="text-xs font-medium text-slate-600">
+                                      Lihat hasil ujian
+                                    </p>
+                                  </HoverCardContent>
+                                </HoverCard>
+                              </TableCell>
+
+                              <TableCell className="text-sm text-slate-500">
+                                {item.created_at_historyExams
+                                  ? useConvertDate(
+                                      item.created_at_historyExams,
+                                      {
+                                        minute: "numeric",
+                                        hour: "numeric",
+                                        day: "numeric",
+                                        month: "long",
+                                        year: "numeric",
+                                      },
+                                    )
+                                  : "-"}
+                              </TableCell>
+
+                              <TableCell>
+                                {isPending ? (
+                                  <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-sm font-bold text-amber-600">
+                                    Pending
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-bold text-emerald-600">
+                                    {item.hasil_ujian} / 100
+                                  </span>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        }
+
+                        // =========================
+                        // BELUM MENGERJAKAN
+                        // =========================
+                        return (
                           <TableRow
-                            key={i}
+                            key={item.idExams ?? i}
                             className="transition-colors hover:bg-slate-50"
                           >
                             <TableCell className="font-medium text-slate-500">
@@ -636,70 +812,23 @@ export default function DashboardStudent() {
                             </TableCell>
 
                             <TableCell>
-                              <HoverCard openDelay={200} closeDelay={200}>
-                                <HoverCardTrigger asChild>
-                                  <Link
-                                    href={`/Student/Dashboard/ResultExam/${item.idExams}`}
-                                    className="font-semibold text-slate-800 transition-colors hover:text-blue-600 hover:underline"
-                                  >
-                                    {item.exams.nama_ujian}
-                                  </Link>
-                                </HoverCardTrigger>
-
-                                <HoverCardContent className="w-fit rounded-lg p-3">
-                                  <p className="text-xs font-medium text-slate-600">
-                                    Lihat hasil ujian
-                                  </p>
-                                </HoverCardContent>
-                              </HoverCard>
+                              <span className="font-semibold text-slate-700">
+                                {item.exams.nama_ujian}
+                              </span>
                             </TableCell>
 
                             <TableCell className="text-sm text-slate-500">
-                              {useConvertDate(item.created_at_historyExams, {
-                                minute: "numeric",
-                                hour: "numeric",
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric",
-                              })}
+                              -
                             </TableCell>
 
                             <TableCell>
-                              {item.hasil_ujian !== "telat" ? (
-                                <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-sm font-bold text-emerald-600">
-                                  {item.tipe_ujian === "pg"
-                                    ? `${item.hasil_ujian} / 100`
-                                    : item.hasil_ujian !== "pending"
-                                      ? `${item.hasil_ujian} / 100`
-                                      : "Pending"}
-                                </span>
-                              ) : (
-                                <span className="text-sm font-semibold text-red-500">
-                                  Tidak Ada Nilai
-                                </span>
-                              )}
+                              <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-500">
+                                Belum Ada Nilai
+                              </span>
                             </TableCell>
                           </TableRow>
-                        ) : lateExam.length > 0 ? (
-                          <TableRow key={i}>
-                            <TableCell
-                              colSpan={4}
-                              className="h-24 text-center font-semibold text-red-500"
-                            >
-                              Telat Melakukan Ujian
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          <TableRow key={i}>
-                            <TableCell
-                              colSpan={4}
-                              className="h-24 text-center font-semibold text-slate-400"
-                            >
-                              Belum Ada Nilai
-                            </TableCell>
-                          </TableRow>
-                        ),
-                      )
+                        );
+                      })
                     ) : (
                       <TableRow>
                         <TableCell colSpan={4} className="h-32 text-center">
