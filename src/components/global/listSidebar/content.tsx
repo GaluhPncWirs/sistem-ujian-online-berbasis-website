@@ -5,6 +5,16 @@ import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { Home, LayoutDashboard, LogOut, User2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function ListSidebar() {
   const getIdUsers = useGetIdUsers((state) => state.role);
@@ -91,17 +101,41 @@ export default function ListSidebar() {
           </Link>
         </div>
 
-        <div className="border-t border-slate-200 pt-2 md:pt-4 md:mt-5">
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={useHandleLogout()}
-            className="flex w-full items-center gap-3 py-3 text-left text-sm font-semibold hover:bg-red-400"
-          >
-            <LogOut className="size-5" />
-            Logout
-          </Button>
-        </div>
+        <Dialog>
+          <DialogTrigger asChild>
+            <div className="border-t border-slate-200 pt-2 md:pt-4 md:mt-5">
+              <Button
+                type="button"
+                className="flex w-full items-center gap-3 py-3 text-left text-sm font-semibold hover:bg-red-400"
+              >
+                <LogOut className="size-5" />
+                Logout
+              </Button>
+            </div>
+          </DialogTrigger>
+
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Konfirmasi Logout Akun</DialogTitle>
+              <DialogDescription>
+                Apakah anda ingin keluar dari sistem ini?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Batal</Button>
+              </DialogClose>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={useHandleLogout()}
+              >
+                <LogOut className="size-5" />
+                Logout
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </nav>
     </div>
   );
