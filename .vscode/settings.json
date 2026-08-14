@@ -27,6 +27,7 @@
         "selesai merombak ui di bagian sidebar di halaman khusus siswa",
         "selesai untuk merombak desain ui halaman dashboard siswa",
         "selesai untuk merombak desain ui halaman profile siswa",
-        "selesai untuk merombak desain ui halaman riwayat ujian dan juga memperbaiki untuk routing halaman riwayat ujian menjadi menggunakan routing parameter"
+        "selesai untuk merombak desain ui halaman riwayat ujian dan juga memperbaiki untuk routing halaman riwayat ujian menjadi menggunakan routing parameter",
+        "selesai untuk merombak semua desain ui halaman dashboard guru"
     ]
 }

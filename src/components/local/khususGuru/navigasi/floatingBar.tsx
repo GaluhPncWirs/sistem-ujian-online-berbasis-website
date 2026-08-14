@@ -52,8 +52,8 @@ export default function FloatingBarDashboardTeacher({
                   onClick={() => handleClickItem(item.id)}
                   className={`group flex w-full min-w-[110px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 sm:min-w-0 ${
                     isActive
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
-                      : "text-slate-500 hover:bg-blue-50 hover:text-blue-600"
+                      ? "bg-blue-500 text-white shadow-md shadow-blue-600/20"
+                      : "text-slate-500 hover:bg-blue-50 hover:text-blue-500"
                   }`}
                 >
                   <span

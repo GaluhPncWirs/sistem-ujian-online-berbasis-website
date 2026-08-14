@@ -198,159 +198,254 @@ export default function TeacherProfile() {
       {getHistoryExams.length > 0 ? (
         <>
           <div className="flex justify-between items-center mb-3">
-            <h1 className="text-4xl font-bold">Profil Guru</h1>
+            <h1 className="text-3xl font-bold">Profil Guru</h1>
             <HamburgerMenu>
               <ListSidebar />
             </HamburgerMenu>
           </div>
-          <div className="w-full h-1 bg-slate-700 rounded-lg mt-3" />
-          <div className="mt-7">
+          <div className="w-full h-0.5 bg-slate-700 rounded-lg" />
+
+          <div className="mt-7 space-y-6">
             <HeaderProfile>
-              <div className="basis-3/4 flex flex-col gap-y-1.5">
-                <h1 className="capitalize font-semibold text-4xl xl:text-5xl">
+              {/* Identity */}
+              <div className="flex-1 space-y-3">
+                <h2 className="text-3xl font-extrabold capitalize">
                   {getProfileTeacher?.fullName || ""}
-                </h1>
-                <div className="text-lg">
-                  <h2>
-                    <span>NISN</span> {getProfileTeacher?.nisn || ""}
-                  </h2>
-                  <h2>{getProfileTeacher?.pengajarMapel || ""}</h2>
+                </h2>
+
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold backdrop-blur-sm shadow-sm">
+                    NISN. {getProfileTeacher?.nisn || ""}
+                  </span>
+
+                  <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold backdrop-blur-sm shadow-sm">
+                    {getProfileTeacher?.pengajarMapel || ""}
+                  </span>
                 </div>
               </div>
+
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="bg-blue-500 hover:bg-blue-600 cursor-pointer text-lg p-5">
+                  <Button className="rounded-xl border border-white/20 bg-white px-5 font-semibold text-blue-600 shadow-md hover:bg-blue-50">
                     Edit Profil
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+
+                <DialogContent className="rounded-2xl sm:max-w-lg">
                   <form
                     className="grid gap-5"
                     onSubmit={(event) => handleEditProfileTeacher(event)}
                   >
-                    <DialogHeader className="text-start">
-                      <DialogTitle>Edit Profile</DialogTitle>
-                      <DialogDescription className="mt-1 text-base">
-                        Edit Seluruh Informasi Profil Anda Disini
-                      </DialogDescription>
-                      <div>
-                        <label htmlFor="fullName" className="mb-2 block">
-                          Nama
-                        </label>
-                        <Input id="fullName" placeholder="Jhon Doe" />
-                      </div>
-                      <div>
-                        <label htmlFor="pengajarMapel" className="mb-2 block">
-                          Ubah Pengajar Mata Pelajaran
-                        </label>
-                        <Input
-                          id="pengajarMapel"
-                          placeholder="Matematika - Bahasa Indonesia - dst"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="noTlp" className="mb-2 block">
-                          Ubah No Telepon
-                        </label>
-                        <Input id="noTlp" placeholder="089276361434" />
-                      </div>
-                      <div>
-                        <label htmlFor="email" className="mb-2 block">
-                          Email
-                        </label>
-                        <Input
-                          type="email"
-                          id="email"
-                          placeholder="jhondoe56@gmail.com"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="password" className="mb-2 block">
-                          Ubah Password
-                        </label>
-                        <Input
-                          type="password"
-                          id="password"
-                          placeholder="**********"
-                        />
-                      </div>
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-bold">
+                        Edit Profil
+                      </DialogTitle>
 
-                      <span className="font-semibold block text-xs text-red-500 text-end">
-                        *Jika Ingin Diubah Hanya Salah Satu Maka Sisanya
-                        Dikosongkan Saja
-                      </span>
+                      <DialogDescription>
+                        Perbarui informasi akun yang ingin Anda ubah.
+                      </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="mt-3">
+
+                    <div>
+                      <label htmlFor="fullName" className="mb-2 block">
+                        Nama
+                      </label>
+                      <Input id="fullName" placeholder="Jhon Doe" />
+                    </div>
+                    <div>
+                      <label htmlFor="pengajarMapel" className="mb-2 block">
+                        Ubah Pengajar Mata Pelajaran
+                      </label>
+                      <Input
+                        id="pengajarMapel"
+                        placeholder="Matematika - Bahasa Indonesia - dst"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="noTlp" className="mb-2 block">
+                        Ubah No Telepon
+                      </label>
+                      <Input id="noTlp" placeholder="089276361434" />
+                    </div>
+                    <div>
+                      <label htmlFor="email" className="mb-2 block">
+                        Email
+                      </label>
+                      <Input
+                        type="email"
+                        id="email"
+                        placeholder="jhondoe56@gmail.com"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="password" className="mb-2 block">
+                        Ubah Password
+                      </label>
+                      <Input
+                        type="password"
+                        id="password"
+                        placeholder="**********"
+                      />
+                    </div>
+
+                    <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium leading-5 text-amber-700">
+                      Kosongkan field yang tidak ingin diubah.
+                    </p>
+
+                    <DialogFooter className="gap-2">
                       <DialogClose asChild>
-                        <Button className="cursor-pointer" variant="outline">
-                          Cancel
+                        <Button variant="outline" className="rounded-xl">
+                          Batal
                         </Button>
                       </DialogClose>
-                      <DialogClose asChild>
-                        <Button type="submit" className="cursor-pointer">
-                          Confirm
-                        </Button>
-                      </DialogClose>
+
+                      <Button
+                        type="submit"
+                        className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                      >
+                        Simpan Perubahan
+                      </Button>
                     </DialogFooter>
                   </form>
                 </DialogContent>
               </Dialog>
             </HeaderProfile>
 
-            <div>
-              <div className="mb-5 flex items-center gap-3">
-                <History className="size-8" />
-                <h1 className="text-2xl font-semibold">
-                  Riwayat Ujian Yang Dibuat
-                </h1>
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              {/* Header */}
+              <div className="border-b border-slate-200 px-5 py-5 sm:px-7">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                      <History className="size-5" />
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+                        Exam History
+                      </p>
+
+                      <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+                        Riwayat Ujian yang Dibuat
+                      </h2>
+
+                      <p className="mt-1 text-sm leading-6 text-slate-500">
+                        Lihat ringkasan ujian yang telah Anda buat dan kelola.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Total Exam */}
+                  <div className="ml-13 w-fit rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 sm:ml-0">
+                    {getHistoryExams?.length || 0} Ujian
+                  </div>
+                </div>
               </div>
 
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-[#3282B8]">
-                    <TableHead>No</TableHead>
-                    <TableHead>Nama Ujian</TableHead>
-                    <TableHead>Jumlah Siswa</TableHead>
-                    <TableHead>Nilai Rata-Rata</TableHead>
-                    <TableHead>Kelas</TableHead>
-                    <TableHead>Tanggal</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {getHistoryExams?.length > 0 ? (
-                    getHistoryExams?.map((item: any, i: number) => (
-                      <TableRow key={i}>
-                        <TableCell className="text-center font-semibold">
-                          {i + 1}
-                        </TableCell>
-                        <TableCell>{item.nama_ujian}</TableCell>
-                        <TableCell className="text-center">
-                          {item.student_id?.length}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {resultNilaiRataRata(item)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {item.kelas}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {item.dibuat_tgl}
+              {/* Table */}
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-50 hover:bg-slate-50">
+                      <TableHead className="w-14 font-semibold text-slate-600">
+                        No
+                      </TableHead>
+
+                      <TableHead className="min-w-[220px] font-semibold text-slate-600">
+                        Nama Ujian
+                      </TableHead>
+
+                      <TableHead className="min-w-[130px] text-center font-semibold text-slate-600">
+                        Jumlah Siswa
+                      </TableHead>
+
+                      <TableHead className="min-w-[150px] text-center font-semibold text-slate-600">
+                        Nilai Rata-Rata
+                      </TableHead>
+
+                      <TableHead className="min-w-[120px] text-center font-semibold text-slate-600">
+                        Kelas
+                      </TableHead>
+
+                      <TableHead className="min-w-[150px] text-center font-semibold text-slate-600">
+                        Tanggal
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+                    {getHistoryExams?.length > 0 ? (
+                      getHistoryExams.map((item: any, i: number) => (
+                        <TableRow
+                          key={item.id ?? i}
+                          className="transition-colors hover:bg-slate-50"
+                        >
+                          {/* No */}
+                          <TableCell className="font-semibold text-slate-400">
+                            {String(i + 1).padStart(2, "0")}
+                          </TableCell>
+
+                          {/* Exam */}
+                          <TableCell>
+                            <div>
+                              <p className="font-semibold text-slate-900">
+                                {item.nama_ujian || "-"}
+                              </p>
+
+                              <p className="mt-1 text-xs text-slate-400">
+                                Ujian yang telah dibuat
+                              </p>
+                            </div>
+                          </TableCell>
+
+                          {/* Student Count */}
+                          <TableCell className="text-center">
+                            <span className="inline-flex items-center rounded-full bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-600">
+                              {item.student_id?.length || 0} Siswa
+                            </span>
+                          </TableCell>
+
+                          {/* Average Score */}
+                          <TableCell className="text-center">
+                            <span className="inline-flex min-w-16 items-center justify-center rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-600">
+                              {resultNilaiRataRata(item) || 0}
+                            </span>
+                          </TableCell>
+
+                          {/* Class */}
+                          <TableCell className="text-center">
+                            <span className="inline-flex rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-600">
+                              {item.kelas || "-"}
+                            </span>
+                          </TableCell>
+
+                          {/* Date */}
+                          <TableCell className="text-center text-sm font-medium text-slate-500">
+                            {item.dibuat_tgl || "-"}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-40 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <History className="size-9 text-slate-300" />
+
+                            <p className="mt-3 font-semibold text-slate-500">
+                              Belum Ada Riwayat Ujian
+                            </p>
+
+                            <p className="mt-1 text-sm text-slate-400">
+                              Ujian yang telah dibuat akan muncul di sini.
+                            </p>
+                          </div>
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="text-center text-lg font-semibold"
-                      >
-                        Belum Ada History
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </section>
           </div>
         </>
       ) : (

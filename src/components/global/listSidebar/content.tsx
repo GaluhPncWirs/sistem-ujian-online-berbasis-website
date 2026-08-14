@@ -10,7 +10,7 @@ export default function ListSidebar() {
   const getIdUsers = useGetIdUsers((state) => state.role);
   const pathName = usePathname();
   return (
-    <div className="flex flex-1 flex-col px-4 py-6">
+    <div className="flex flex-1 flex-col px-4 py-5">
       <Link
         href={
           getIdUsers.includes("pelajar")
@@ -28,10 +28,10 @@ export default function ListSidebar() {
           className="w-52 object-contain"
         />
       </Link>
-      <p className="px-3 pt-5 md:pt-8 text-xs font-bold uppercase tracking-wider text-slate-400">
+      <p className="px-3 pt-3 md:pt-8 text-xs font-bold uppercase tracking-wider text-slate-400">
         Menu
       </p>
-      <nav className="flex flex-col justify-between gap-1 h-full mt-3 md:mt-5">
+      <nav className="flex flex-col justify-between gap-1 h-full mt-2 md:mt-5">
         <div className="grid grid-cols-3 md:grid-cols-1 gap-1">
           <Link
             href={
@@ -91,12 +91,12 @@ export default function ListSidebar() {
           </Link>
         </div>
 
-        <div className="border-t border-slate-200 mt-1.5 pt-2 md:pt-4 md:mt-5">
+        <div className="border-t border-slate-200 pt-2 md:pt-4 md:mt-5">
           <Button
             type="button"
             variant="destructive"
             onClick={useHandleLogout()}
-            className="flex w-full items-center gap-3 px-3 py-3 text-left text-sm font-semibold hover:bg-red-400"
+            className="flex w-full items-center gap-3 py-3 text-left text-sm font-semibold hover:bg-red-400"
           >
             <LogOut className="size-5" />
             Logout

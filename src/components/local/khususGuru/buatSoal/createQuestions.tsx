@@ -328,7 +328,7 @@ export default function CreateNewQuestions() {
                 <Select onValueChange={(val) => setChooseTypeExams(val)}>
                   <SelectTrigger
                     id="exam-type"
-                    className="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 shadow-none"
+                    className="h-12 rounded-xl w-full border-slate-200 bg-slate-50 px-4 shadow-none"
                   >
                     <SelectValue placeholder="Pilih tipe ujian" />
                   </SelectTrigger>
@@ -353,7 +353,7 @@ export default function CreateNewQuestions() {
                 <Select onValueChange={(val) => setSelectedValueNameExam(val)}>
                   <SelectTrigger
                     id="exam-name"
-                    className="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 shadow-none"
+                    className="h-12 rounded-xl w-full border-slate-200 bg-slate-50 px-4 shadow-none"
                   >
                     <SelectValue placeholder="Pilih nama ujian" />
                   </SelectTrigger>
@@ -411,7 +411,7 @@ export default function CreateNewQuestions() {
           </section>
 
           {/* ================= QUESTION ================= */}
-          <section className="border-t border-slate-100 pt-8">
+          <section className="border-t border-slate-100">
             <div className="mb-4">
               <h3 className="text-lg font-bold text-slate-900">Pertanyaan</h3>
 
