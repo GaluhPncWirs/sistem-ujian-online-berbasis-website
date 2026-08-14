@@ -5,7 +5,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase/data";
 import {
   Table,
@@ -35,8 +35,44 @@ import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { useGetDataUsers } from "@/store/useGetDataUsers/state";
 import MainContent from "@/layout/mainContent/content";
 import { BarChart3, BellRing, CalendarClock } from "lucide-react";
+import {
+  convertToNumber,
+  getCurrentTimeInMinutes,
+  getDateKey,
+} from "@/lib/utils/convertDate";
+import { promise } from "zod";
 
 type ExamStatus = "BELUM_MULAI" | "BERLANGSUNG" | "LEWAT";
+
+function getExamStatus(tenggatWaktu: string, tglUjian: string): ExamStatus {
+  const { start, end } = convertToNumber(tenggatWaktu);
+
+  const today = getDateKey(new Date());
+  const examDate = getDateKey(tglUjian);
+  const currentMinute = getCurrentTimeInMinutes();
+
+  if (!today || !examDate || Number.isNaN(start) || Number.isNaN(end)) {
+    return "LEWAT";
+  }
+
+  if (examDate > today) {
+    return "BELUM_MULAI";
+  }
+
+  if (examDate < today) {
+    return "LEWAT";
+  }
+
+  if (currentMinute < start) {
+    return "BELUM_MULAI";
+  }
+
+  if (currentMinute >= end) {
+    return "LEWAT";
+  }
+
+  return "BERLANGSUNG";
+}
 
 export default function DashboardStudent() {
   const getIdStudent = useGetIdUsers((state) => state.idUser);
@@ -48,48 +84,46 @@ export default function DashboardStudent() {
   const [lateExam, setLateExam] = useState([]);
 
   const filterScoreExams = scheduleExams.filter(
-    (avg: { status_exam: boolean; hasil_ujian: string }) =>
-      avg.status_exam === true &&
-      avg.hasil_ujian !== "pending" &&
-      avg.hasil_ujian !== "telat",
+    (exams: { status_exam: boolean; hasil_ujian: string }) => {
+      if (!exams.status_exam) return false;
+      if (exams.hasil_ujian === "pending" || exams.hasil_ujian === "telat") {
+        return false;
+      }
+
+      const score = Number(exams.hasil_ujian);
+
+      return Number.isFinite(score);
+    },
   );
 
+  const totalScore = filterScoreExams.reduce((total, exam) => {
+    return total + Number(exam.hasil_ujian);
+  }, 0);
+
   const averageValue =
-    filterScoreExams
-      .map((values: any) => Number(values.hasil_ujian))
-      .reduce((acc: any, cur: any) => acc + cur, 0) / filterScoreExams.length;
+    filterScoreExams.length > 0
+      ? Math.round((totalScore / filterScoreExams.length) * 100) / 100
+      : 0;
 
-  // untuk fitur deadline
-  const waktuHariIni = useConvertDate(new Date().toISOString(), {
-    minute: "numeric",
-    hour: "numeric",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  })
-    .split(" ")
-    .slice(0, 3)
-    .join(" ");
-
-  const waktuDurasiIni = useConvertDate(new Date().toISOString(), {
-    minute: "numeric",
-    hour: "numeric",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  })
-    .split(" ")
-    .slice(4, 5)
-    .join(" ");
-
-  function toMinute(val: string) {
-    const deleteDot = val.replace(/[:.]/g, "-");
-    const [hoursStr, minuteStr] = deleteDot.split("-").map(Number);
-    return hoursStr * 60 + minuteStr;
-  }
-
-  async function lateExams(idUjian: number) {
+  const lateExams = useCallback(async (idUjian: number) => {
     if (!getIdStudent) return;
+
+    const { data: existingExam, error: fetchError } = await supabase
+      .from("history-exam-student")
+      .select("id, hasil_ujian, status_exam")
+      .eq("student_id", getIdStudent)
+      .eq("exam_id", Number(idUjian))
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error("Gagal mengecek history ujian:", fetchError);
+      return;
+    }
+
+    if (existingExam) {
+      return;
+    }
+
     const payload = {
       created_at: new Date().toISOString(),
       student_id: getIdStudent,
@@ -102,106 +136,94 @@ export default function DashboardStudent() {
 
     const { error: insertError } = await supabase
       .from("history-exam-student")
-      .upsert(payload, {
-        onConflict: "student_id,exam_id",
-      });
+      .insert(payload);
 
     if (insertError) {
       toast("❌ Gagal Simpan Data", {
         description: insertError.message,
       });
-    } else {
-      console.log("Berhasil insert data telat");
+      return;
     }
-  }
+  }, []);
 
-  function convertDateToISO(dateStr: string) {
-    const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const resultConvert = `${year}-${month}-${day}`;
-    return new Date(resultConvert + "T00:00:00").getTime();
-  }
-
-  function convertToNumber(tenggat_waktu: string) {
-    const [startTimeExam, endTimeExams] = tenggat_waktu
-      .split("-")
-      .map((item: string) => item.trim());
-    return [toMinute(startTimeExam), toMinute(endTimeExams)];
-  }
-
-  function getExamStatus(tenggat_waktu: string, tgl_ujian: string): ExamStatus {
-    const [startExams, endExams] = convertToNumber(tenggat_waktu);
-
-    const hariIni = toMinute(waktuDurasiIni);
-    const todayISO = convertDateToISO(waktuHariIni);
-    const examISO = convertDateToISO(tgl_ujian);
-
-    if (examISO > todayISO) return "BELUM_MULAI";
-
-    if (examISO === todayISO) {
-      if (hariIni < startExams) return "BELUM_MULAI";
-      if (hariIni > endExams) return "LEWAT";
-      return "BERLANGSUNG";
+  useEffect(() => {
+    if (!scheduleExams.length) {
+      setLateExam([]);
+      return;
     }
-    return "LEWAT";
-  }
 
-  // useEffect(() => {
-  //   if (!scheduleExams.length) return;
-  //   async function handleLateExams() {
-  //     const lateExamsList = scheduleExams.filter(
-  //       (data: {
-  //         tenggat_waktu: string;
-  //         dibuat_tgl: string;
-  //         idExams: number;
-  //       }) => {
-  //         const status = getExamStatus(data.tenggat_waktu, data.dibuat_tgl);
-  //         return status === "LEWAT";
-  //       },
-  //     );
-
-  //     if (lateExamsList.length > 0) {
-  //       for (const dataExam of lateExamsList as any[]) {
-  //         await lateExams(dataExam.idExams);
-  //       }
-  //     }
-  //     setLateExam(lateExamsList);
-  //   }
-  //   handleLateExams();
-  // }, [scheduleExams]);
-
-  function deadlineUjianTercepatHariIni() {
-    const hariIni = toMinute(waktuDurasiIni);
-    const isComingSoonExams = scheduleExams.filter(
-      (fil: { status_exam: boolean; dibuat_tgl: string }) =>
-        fil.status_exam !== true && fil.dibuat_tgl === waktuHariIni,
-    );
-    const validExams = isComingSoonExams.filter(
-      (exam: { tenggat_waktu: string }) => {
-        const filterScheduleExam = convertToNumber(exam.tenggat_waktu);
-        return (
-          hariIni > filterScheduleExam[0] && hariIni < filterScheduleExam[1]
-        );
+    const lateExamsList = scheduleExams.filter(
+      (exam: {
+        tenggat_waktu: string;
+        dibuat_tgl: string;
+        idExams: number;
+      }) => {
+        return getExamStatus(exam.tenggat_waktu, exam.dibuat_tgl) === "LEWAT";
       },
     );
 
-    if (validExams.length === 0) {
+    setLateExam(lateExamsList);
+
+    if (lateExamsList.length === 0) {
+      return;
+    }
+
+    async function saveLateExams() {
+      await Promise.all(
+        lateExamsList.map((exam: { idExams: number }) =>
+          lateExams(exam.idExams),
+        ),
+      );
+    }
+
+    saveLateExams();
+  }, [scheduleExams]);
+
+  function deadlineUjianTercepatHariIni() {
+    const today = getDateKey(new Date());
+    const currentMinute = getCurrentTimeInMinutes();
+
+    const upcomingExams = scheduleExams.filter(
+      (exam: {
+        status_exam: boolean;
+        dibuat_tgl: string;
+        tenggat_waktu: string;
+      }) => {
+        if (exam.status_exam) return false;
+
+        const examDate = getDateKey(exam.dibuat_tgl);
+
+        if (examDate !== today) return false;
+
+        const { start, end } = convertToNumber(exam.tenggat_waktu);
+
+        if (Number.isNaN(start) || Number.isNaN(end)) {
+          return false;
+        }
+
+        // Ujian yang belum selesai
+        return currentMinute < end;
+      },
+    );
+
+    if (upcomingExams.length === 0) {
       return null;
     }
 
-    return validExams.reduce(
+    return upcomingExams.reduce(
       (
-        closestExam: { tenggat_waktu: string },
-        currentExam: { tenggat_waktu: string },
+        closestExam: {
+          tenggat_waktu: string;
+        },
+        currentExam: {
+          tenggat_waktu: string;
+        },
       ) => {
-        const closestDeadline = convertToNumber(closestExam.tenggat_waktu)[0];
-        const currentDeadline = convertToNumber(currentExam.tenggat_waktu)[0];
-        return Math.abs(currentDeadline - toMinute(waktuDurasiIni)) <
-          Math.abs(closestDeadline - toMinute(waktuDurasiIni))
-          ? currentExam
-          : closestExam;
+        const closestDeadline = convertToNumber(closestExam.tenggat_waktu).end;
+
+        const currentDeadline = convertToNumber(currentExam.tenggat_waktu).end;
+
+        return currentDeadline < closestDeadline ? currentExam : closestExam;
       },
     );
   }
