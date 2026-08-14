@@ -388,9 +388,7 @@ export default function DashboardStudent() {
                             <Button
                               onClick={() =>
                                 push(
-                                  `/Student/Exams/StartExam?idExams=${
-                                    deadlineUjianTercepatHariIni().idExams
-                                  }`,
+                                  `/Student/Exams/StartExam/${deadlineUjianTercepatHariIni().idExams}`,
                                 )
                               }
                               className="rounded-xl bg-blue-600 hover:bg-blue-700"

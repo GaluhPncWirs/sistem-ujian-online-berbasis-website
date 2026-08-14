@@ -1,6 +1,7 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -29,9 +30,10 @@ import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { Flag, List, Timer } from "lucide-react";
 import MainContent from "@/layout/mainContent/content";
 
-export default function ExamsComponent() {
+export default function StartExam() {
   const router = useRouter();
-  const idExams = useSearchParams().get("idExams");
+  const params = useParams();
+  const idExams = params.id as string;
   const getIdStudent = useGetIdUsers((state) => state.idUser);
   const [questionsExam, setQuestionsExam] = useState<SoalUjian | null>(null);
   const [dataStudent, setDataStudent] = useState<any>(null);
