@@ -206,7 +206,7 @@ export default function Profil() {
 
                 <div className="flex flex-wrap gap-2">
                   <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold backdrop-blur-sm shadow-sm">
-                    NIS {dataStudent?.nis || "-"}
+                    NIS. {dataStudent?.nis || "-"}
                   </span>
 
                   <span className="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold backdrop-blur-sm shadow-sm">
@@ -470,51 +470,140 @@ export default function Profil() {
           </div>
         </>
       ) : (
-        <>
-          <div className="w-1/3 h-10 bg-slate-500 animate-pulse rounded-md"></div>
-          <div className="h-1 bg-slate-500 animate-pulse rounded-md my-3" />
-          <div className="mt-7">
-            <div className="flex justify-center items-center gap-7 mb-5 max-[640px]:flex-col max-[640px]:mb-10">
-              <div className="w-28 h-28 rounded-full bg-slate-500 animate-pulse"></div>
+        <div className="space-y-6">
+          {/* ================= PROFILE HERO ================= */}
+          <section className="overflow-hidden rounded-3xl bg-slate-200 p-6 shadow-sm animate-pulse sm:p-8">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+              {/* Profile Image */}
+              <div className="size-24 shrink-0 rounded-full bg-slate-300 sm:size-28" />
 
-              <div className="w-2/3">
-                <h1 className="mb-2 bg-slate-500 animate-pulse rounded-md w-2/3 h-7"></h1>
-                <p className="bg-slate-500 animate-pulse rounded-md w-1/3 h-5"></p>
+              {/* Identity */}
+              <div className="w-full">
+                <div className="h-3 w-28 rounded bg-slate-300" />
+
+                <div className="mt-3 h-8 w-64 max-w-full rounded-md bg-slate-300 sm:h-9" />
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="h-7 w-24 rounded-full bg-slate-300" />
+                  <div className="h-7 w-28 rounded-full bg-slate-300" />
+                </div>
               </div>
-              <div className="w-20 h-8 bg-slate-500 animate-pulse rounded-md"></div>
+
+              {/* Edit Button */}
+              <div className="h-11 w-full rounded-xl bg-slate-300 sm:w-32" />
+            </div>
+          </section>
+
+          {/* ================= ACCOUNT INFORMATION ================= */}
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            {/* Heading */}
+            <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
+              <div className="flex items-center gap-3 animate-pulse">
+                <div className="size-10 rounded-xl bg-slate-200" />
+
+                <div>
+                  <div className="h-6 w-40 rounded-md bg-slate-200" />
+                  <div className="mt-2 h-3 w-56 rounded bg-slate-100" />
+                </div>
+              </div>
             </div>
 
-            <div className="mb-5">
-              <div className="flex items-center mb-5 gap-3">
-                <div className="w-9 h-7 rounded-md bg-slate-500 animate-pulse"></div>
-                <div className="w-1/5 h-7 rounded-md bg-slate-500 animate-pulse"></div>
-              </div>
-              <div>
-                <div className="w-11/12 h-7 rounded-md bg-slate-500 animate-pulse mb-2"></div>
-                <div className="w-3/4 h-7 rounded-md bg-slate-500 animate-pulse mb-2"></div>
-                <div className="w-10/12 h-7 rounded-md bg-slate-500 animate-pulse mb-2"></div>
-                <div className="w-1/2 h-7 rounded-md bg-slate-500 animate-pulse mb-2"></div>
-                <div className="w-1/4 h-7 rounded-md bg-slate-500 animate-pulse"></div>
+            {/* Information Rows */}
+            <div className="divide-y divide-slate-100 animate-pulse">
+              {[1, 2, 3, 4, 5].map((item) => (
+                <div
+                  key={item}
+                  className="grid grid-cols-1 gap-2 px-5 py-4 sm:grid-cols-3 sm:px-6"
+                >
+                  <div className="h-4 w-24 rounded bg-slate-200" />
+
+                  <div className="h-4 w-52 max-w-full rounded bg-slate-100 sm:col-span-2" />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ================= EXAM STATISTICS ================= */}
+          <section>
+            {/* Heading */}
+            <div className="mb-5 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-slate-200" />
+
+                <div>
+                  <div className="h-6 w-36 rounded-md bg-slate-200" />
+                  <div className="mt-2 h-3 w-56 rounded bg-slate-100" />
+                </div>
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center mb-5 gap-3">
-                <div className="w-9 h-7 rounded-md bg-slate-500 animate-pulse"></div>
-                <div className="w-1/3 h-7 rounded-md bg-slate-500 animate-pulse"></div>
-              </div>
-              <div className="flex justify-evenly items-center my-10 max-[640px]:gap-x-3">
-                <div className="h-28 w-28 rounded-md bg-slate-500 animate-pulse"></div>
-                <div className="h-28 w-28 rounded-md bg-slate-500 animate-pulse"></div>
-                <div className="h-28 w-28 rounded-md bg-slate-500 animate-pulse"></div>
-              </div>
+            {/* Statistic Cards */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {[1, 2].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                >
+                  <div className="flex items-start justify-between animate-pulse">
+                    <div className="w-full">
+                      <div className="h-4 w-32 rounded bg-slate-200" />
 
-              <div className="w-full h-7 rounded-md bg-slate-500 animate-pulse mb-3"></div>
-              <div className="w-full h-7 rounded-md bg-slate-500 animate-pulse mb-3"></div>
-              <div className="w-full h-7 rounded-md bg-slate-500 animate-pulse mb-3"></div>
+                      <div className="mt-3 h-9 w-16 rounded-md bg-slate-200" />
+
+                      <div className="mt-2 h-3 w-44 rounded bg-slate-100" />
+                    </div>
+
+                    <div className="size-12 shrink-0 rounded-xl bg-slate-100" />
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        </>
+          </section>
+
+          {/* ================= EXAM HISTORY ================= */}
+          <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            {/* Heading */}
+            <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
+              <div className="animate-pulse">
+                <div className="h-6 w-36 rounded-md bg-slate-200" />
+
+                <div className="mt-2 h-3 w-64 max-w-full rounded bg-slate-100" />
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <div className="min-w-[760px] animate-pulse">
+                {/* Table Header */}
+                <div className="grid grid-cols-[60px_2fr_1.5fr_1fr_1.2fr] gap-4 bg-slate-50 px-5 py-4">
+                  <div className="h-4 rounded bg-slate-200" />
+                  <div className="h-4 rounded bg-slate-200" />
+                  <div className="h-4 rounded bg-slate-200" />
+                  <div className="h-4 rounded bg-slate-200" />
+                  <div className="h-4 rounded bg-slate-200" />
+                </div>
+
+                {/* Table Rows */}
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-[60px_2fr_1.5fr_1fr_1.2fr] gap-4 border-t border-slate-100 px-5 py-5"
+                  >
+                    <div className="h-4 w-6 rounded bg-slate-100" />
+
+                    <div className="h-4 w-44 rounded bg-slate-100" />
+
+                    <div className="h-4 w-32 rounded bg-slate-100" />
+
+                    <div className="h-6 w-16 rounded-full bg-slate-100" />
+
+                    <div className="h-6 w-24 rounded-full bg-slate-100" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
       )}
     </MainContent>
   );

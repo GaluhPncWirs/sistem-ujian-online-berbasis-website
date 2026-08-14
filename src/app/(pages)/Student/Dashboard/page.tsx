@@ -148,29 +148,29 @@ export default function DashboardStudent() {
     return "LEWAT";
   }
 
-  useEffect(() => {
-    if (!scheduleExams.length) return;
-    async function handleLateExams() {
-      const lateExamsList = scheduleExams.filter(
-        (data: {
-          tenggat_waktu: string;
-          dibuat_tgl: string;
-          idExams: number;
-        }) => {
-          const status = getExamStatus(data.tenggat_waktu, data.dibuat_tgl);
-          return status === "LEWAT";
-        },
-      );
+  // useEffect(() => {
+  //   if (!scheduleExams.length) return;
+  //   async function handleLateExams() {
+  //     const lateExamsList = scheduleExams.filter(
+  //       (data: {
+  //         tenggat_waktu: string;
+  //         dibuat_tgl: string;
+  //         idExams: number;
+  //       }) => {
+  //         const status = getExamStatus(data.tenggat_waktu, data.dibuat_tgl);
+  //         return status === "LEWAT";
+  //       },
+  //     );
 
-      if (lateExamsList.length > 0) {
-        for (const dataExam of lateExamsList as any[]) {
-          await lateExams(dataExam.idExams);
-        }
-      }
-      setLateExam(lateExamsList);
-    }
-    handleLateExams();
-  }, [scheduleExams]);
+  //     if (lateExamsList.length > 0) {
+  //       for (const dataExam of lateExamsList as any[]) {
+  //         await lateExams(dataExam.idExams);
+  //       }
+  //     }
+  //     setLateExam(lateExamsList);
+  //   }
+  //   handleLateExams();
+  // }, [scheduleExams]);
 
   function deadlineUjianTercepatHariIni() {
     const hariIni = toMinute(waktuDurasiIni);
@@ -619,7 +619,7 @@ export default function DashboardStudent() {
                               <HoverCard openDelay={200} closeDelay={200}>
                                 <HoverCardTrigger asChild>
                                   <Link
-                                    href={`/Student/Dashboard/ResultExam?id=${item.idExams}`}
+                                    href={`/Student/Dashboard/ResultExam/${item.idExams}`}
                                     className="font-semibold text-slate-800 transition-colors hover:text-blue-600 hover:underline"
                                   >
                                     {item.exams.nama_ujian}
