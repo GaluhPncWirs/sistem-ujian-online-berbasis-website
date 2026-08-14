@@ -46,7 +46,7 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
         <div className="flex flex-col justify-center gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-100 ">
-              Student Dashboard
+              {`${user === "Siswa" ? "Student" : "Teacher"} Dashboard`}
             </p>
 
             <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
@@ -82,8 +82,9 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
             </h2>
 
             <p className="mt-2 max-w-xl text-sm leading-6 text-blue-50 sm:text-base">
-              Semoga harimu berjalan dengan baik. Yuk, lanjutkan aktivitas ujian
-              dan capai hasil terbaikmu.
+              {user === "Siswa"
+                ? "Semoga harimu berjalan dengan baik. Yuk, lanjutkan aktivitas ujian dan capai hasil terbaikmu."
+                : "Semoga harimu berjalan dengan baik. Yuk, kelola ujian, pantau hasil, dan bantu siswa mencapai hasil terbaiknya."}
             </p>
           </div>
         </div>

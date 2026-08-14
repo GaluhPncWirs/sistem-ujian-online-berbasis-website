@@ -282,218 +282,359 @@ export default function CreateNewQuestions() {
   }, [clearInput, chooseTypeExams]);
 
   return (
-    <div className="w-11/12 mx-auto">
-      <h1 className="text-2xl font-semibold tracking-wide">Buat Soal Ujian</h1>
-      <div className="p-7 rounded-md">
-        <form className="flex flex-col gap-5">
-          <div className="flex justify-around">
-            <div className="w-1/2">
-              <h1 className="font-semibold mb-2 text-lg">Pilih Tipe Ujian</h1>
-              <Select onValueChange={(val) => setChooseTypeExams(val)}>
-                <SelectTrigger className="w-11/12 border border-black">
-                  <SelectValue placeholder="Tipe Ujian (PG / Essay)" />
-                </SelectTrigger>
-                <SelectContent className="p-1">
-                  <SelectItem value="pg">Pilihan Ganda</SelectItem>
-                  <SelectItem value="essay">Essay</SelectItem>
-                </SelectContent>
-              </Select>
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      {/* ================= HEADER ================= */}
+      <div className="border-b border-slate-200 px-5 py-5 sm:px-7">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-blue-600">
+            Question Builder
+          </p>
+
+          <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+            Buat Soal Ujian
+          </h2>
+
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+            Buat pertanyaan baru untuk ujian yang sudah tersedia atau buat ujian
+            baru sebelum menambahkan soal.
+          </p>
+        </div>
+      </div>
+
+      <div className="p-5 sm:p-7">
+        <form className="space-y-8">
+          {/* ================= EXAM SETTINGS ================= */}
+          <section>
+            <div className="mb-4">
+              <h3 className="text-lg font-bold text-slate-900">
+                Pengaturan Ujian
+              </h3>
+
+              <p className="text-sm text-slate-500">
+                Tentukan tipe dan ujian yang akan digunakan.
+              </p>
             </div>
-            <div className="w-1/2">
-              <h1 className="font-semibold mb-2 text-lg">Nama Ujian</h1>
-              <Select onValueChange={(val) => setSelectedValueNameExam(val)}>
-                <SelectTrigger className="w-11/12 border border-black">
-                  <SelectValue placeholder="Pilih Nama Ujiannya" />
-                </SelectTrigger>
-                <SelectContent className="p-1">
-                  <SelectItem
-                    value="buatUjianBaru"
-                    className="border-black border bg-slate-300"
-                  >
-                    Buat Ujian Baru
-                  </SelectItem>
-                  {chooseTypeExams === "pg"
-                    ? dataNameExam.map(
-                        (nameExam: any, i: number) =>
-                          nameExam.tipeUjian === "pg" && (
-                            <SelectItem
-                              value={nameExam.nama_ujian || "Nama ujian"}
-                              key={i}
-                            >
-                              {nameExam.nama_ujian || "Nama Ujian"}
-                            </SelectItem>
-                          ),
-                      )
-                    : dataNameExam.map(
-                        (nameExam: any, i: number) =>
-                          nameExam.tipeUjian === "essay" && (
-                            <SelectItem
-                              value={nameExam.nama_ujian || "Nama ujian"}
-                              key={i}
-                            >
-                              {nameExam.nama_ujian || "Nama Ujian"}
-                            </SelectItem>
-                          ),
-                      )}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="w-full sm:w-3/4">
-            {selectedValueNameExam === "buatUjianBaru" && (
-              <>
+
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              {/* Exam Type */}
+              <div>
                 <label
-                  htmlFor="nama_ujian"
-                  className="font-semibold mb-2 inline-block"
+                  htmlFor="exam-type"
+                  className="mb-2 block text-sm font-semibold text-slate-700"
+                >
+                  Tipe Ujian
+                </label>
+
+                <Select onValueChange={(val) => setChooseTypeExams(val)}>
+                  <SelectTrigger
+                    id="exam-type"
+                    className="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 shadow-none"
+                  >
+                    <SelectValue placeholder="Pilih tipe ujian" />
+                  </SelectTrigger>
+
+                  <SelectContent className="rounded-xl bg-white">
+                    <SelectItem value="pg">Pilihan Ganda</SelectItem>
+
+                    <SelectItem value="essay">Essay</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Exam Name */}
+              <div>
+                <label
+                  htmlFor="exam-name"
+                  className="mb-2 block text-sm font-semibold text-slate-700"
                 >
                   Nama Ujian
                 </label>
-                <Input
-                  id="nama_ujian"
-                  className="border border-black rounded-sm p-1 px-2"
-                  onChange={(e) => {
-                    handleValueInput(e);
-                    setNameExams(e.currentTarget.value);
-                  }}
-                  value={nameExam}
-                />
-              </>
-            )}
-            <label
-              htmlFor="questions"
-              className="font-semibold mb-2 inline-block mt-3 text-lg"
-            >
-              Pertanyaan
-            </label>
-            <Textarea
-              id="questions"
-              className="border border-black rounded-sm p-1 px-2 h-20"
-              onChange={(e) => {
-                handleValueInput(e);
-                setQuestion(e.currentTarget.value);
-              }}
-              value={question}
-            />
-          </div>
-          {chooseTypeExams === "pg" && (
-            <div>
-              <div className="mb-5">
-                <h1 className="font-semibold inline-block mb-4 text-lg">
-                  Pilihan Jawaban
-                </h1>
-                <div className="flex gap-x-5 gap-y-3 flex-wrap">
-                  {["a", "b", "c", "d", "e"].map((option: string) => {
-                    const answerKey = `answer_${option}`;
-                    return (
-                      <div key={`answer-option-${option}`}>
-                        <label
-                          htmlFor={answerKey}
-                          className="text-base font-semibold inline-block mb-2"
-                        >
-                          {`Opsi ${option.toLocaleUpperCase()}`}
-                        </label>
-                        <Input
-                          id={answerKey}
-                          type="text"
-                          className="border border-black rounded-sm p-1 px-2 w-full sm:w-fit"
-                          value={answer[answerKey]}
-                          onChange={(e) => {
-                            handleValueInput(e);
-                            handleAddAnswer(e);
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div>
-                <h1 className="font-semibold mb-3 text-lg">
-                  Jawaban Yang Benar
-                </h1>
-                <Select onValueChange={(val) => setSelectCorrectAnswer(val)}>
-                  <SelectTrigger className="border border-black w-full sm:w-1/2">
-                    <SelectValue placeholder="Pilih Jawaban Yang Benar" />
+
+                <Select onValueChange={(val) => setSelectedValueNameExam(val)}>
+                  <SelectTrigger
+                    id="exam-name"
+                    className="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 shadow-none"
+                  >
+                    <SelectValue placeholder="Pilih nama ujian" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {["a", "b", "c", "d", "e"].map((option: string) => {
-                      const answerKey = `answer_${option}`;
+
+                  <SelectContent className="rounded-xl bg-white p-1">
+                    <SelectItem
+                      value="buatUjianBaru"
+                      className="rounded-lg bg-blue-50 font-semibold text-blue-600"
+                    >
+                      + Buat Ujian Baru
+                    </SelectItem>
+
+                    {dataNameExam.map((nameExam: any, i: number) => {
+                      const isCorrectType =
+                        nameExam.tipeUjian === chooseTypeExams;
+
                       return (
-                        <SelectItem key={option} value={option}>
-                          {answer[answerKey] ||
-                            `Opsi ${option.toLocaleUpperCase()}`}
-                        </SelectItem>
+                        isCorrectType && (
+                          <SelectItem
+                            key={i}
+                            value={nameExam.nama_ujian || "Nama ujian"}
+                          >
+                            {nameExam.nama_ujian || "Nama Ujian"}
+                          </SelectItem>
+                        )
                       );
                     })}
                   </SelectContent>
                 </Select>
               </div>
             </div>
+
+            {/* New Exam Name */}
+            {selectedValueNameExam === "buatUjianBaru" && (
+              <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
+                <label
+                  htmlFor="nama_ujian"
+                  className="mb-2 block text-sm font-semibold text-slate-700"
+                >
+                  Nama Ujian Baru
+                </label>
+
+                <Input
+                  id="nama_ujian"
+                  className="h-12 rounded-xl border-slate-200 bg-white"
+                  placeholder="Contoh: Ujian Matematika Semester 1"
+                  onChange={(e) => {
+                    handleValueInput(e);
+                    setNameExams(e.currentTarget.value);
+                  }}
+                  value={nameExam}
+                />
+              </div>
+            )}
+          </section>
+
+          {/* ================= QUESTION ================= */}
+          <section className="border-t border-slate-100 pt-8">
+            <div className="mb-4">
+              <h3 className="text-lg font-bold text-slate-900">Pertanyaan</h3>
+
+              <p className="text-sm text-slate-500">
+                Tulis pertanyaan yang akan diberikan kepada peserta.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5">
+              <label
+                htmlFor="questions"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Isi Pertanyaan
+              </label>
+
+              <Textarea
+                id="questions"
+                placeholder="Tulis pertanyaan ujian di sini..."
+                className="min-h-32 resize-y rounded-xl border-slate-200 bg-white p-4 text-sm leading-6"
+                onChange={(e) => {
+                  handleValueInput(e);
+                  setQuestion(e.currentTarget.value);
+                }}
+                value={question}
+              />
+            </div>
+          </section>
+
+          {/* ================= MULTIPLE CHOICE ================= */}
+          {chooseTypeExams === "pg" && (
+            <section className="border-t border-slate-100 pt-8">
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-slate-900">
+                  Pilihan Jawaban
+                </h3>
+
+                <p className="text-sm text-slate-500">
+                  Isi setiap opsi jawaban, kemudian tentukan jawaban yang benar.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {["a", "b", "c", "d", "e"].map((option: string) => {
+                  const answerKey = `answer_${option}`;
+
+                  return (
+                    <div
+                      key={`answer-option-${option}`}
+                      className="rounded-xl border border-slate-200 bg-white p-4"
+                    >
+                      <label
+                        htmlFor={answerKey}
+                        className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700"
+                      >
+                        <span className="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-xs font-bold uppercase text-blue-600">
+                          {option}
+                        </span>
+                        Opsi {option.toUpperCase()}
+                      </label>
+
+                      <Input
+                        id={answerKey}
+                        type="text"
+                        placeholder={`Masukkan opsi ${option.toUpperCase()}`}
+                        className="h-11 rounded-xl border-slate-200"
+                        value={answer[answerKey]}
+                        onChange={(e) => {
+                          handleValueInput(e);
+                          handleAddAnswer(e);
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Correct Answer */}
+              <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-100/50 p-5">
+                <label
+                  htmlFor="correct-answer"
+                  className="mb-2 block text-sm font-semibold text-slate-700"
+                >
+                  Jawaban yang Benar
+                </label>
+
+                <Select onValueChange={(val) => setSelectCorrectAnswer(val)}>
+                  <SelectTrigger
+                    id="correct-answer"
+                    className="h-12 w-full rounded-xl border-slate-200 bg-white sm:w-1/2"
+                  >
+                    <SelectValue placeholder="Pilih jawaban yang benar" />
+                  </SelectTrigger>
+
+                  <SelectContent className="rounded-xl bg-white">
+                    {["a", "b", "c", "d", "e"].map((option: string) => {
+                      const answerKey = `answer_${option}`;
+
+                      return (
+                        <SelectItem key={option} value={option}>
+                          {answer[answerKey] || `Opsi ${option.toUpperCase()}`}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            </section>
           )}
-        </form>
-        <Dialog>
-          <DialogTrigger asChild>
-            <button
-              className="cursor-pointer px-6 py-1 rounded-md font-semibold text-lg border border-slate-800 hover:opacity-60 mt-5"
-              disabled={!isFormFilled()}
-            >
-              Buat
-            </button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Apakah Soal ini Sudah Benar ?</DialogTitle>
-              <DialogDescription className="mt-3 text-md">
-                Dengan Soal Seperti ini
-              </DialogDescription>
-              <DialogDescription>
-                Pertanyaan <span className="font-bold">" {question} "</span>
-              </DialogDescription>
-              {chooseTypeExams === "pg" && (
-                <>
-                  <div className="my-2 flex flex-col gap-y-2">
-                    <DialogDescription>
-                      Jawaban A{" "}
-                      <span className="font-bold"> : "{answer.answer_a}"</span>
-                    </DialogDescription>
-                    <DialogDescription>
-                      Jawaban B{" "}
-                      <span className="font-bold"> : "{answer.answer_b}"</span>
-                    </DialogDescription>
-                    <DialogDescription>
-                      Jawaban C{" "}
-                      <span className="font-bold"> : "{answer.answer_c}"</span>
-                    </DialogDescription>
-                    <DialogDescription>
-                      Jawaban D{" "}
-                      <span className="font-bold"> : "{answer.answer_d}"</span>
-                    </DialogDescription>
-                    <DialogDescription>
-                      Jawaban E{" "}
-                      <span className="font-bold"> : "{answer.answer_e}"</span>
-                    </DialogDescription>
-                  </div>
-                  <DialogDescription>
-                    Jawaban Yang Benar{" "}
-                    <span className="font-bold">
-                      {selectCorrectAnswer.toLocaleUpperCase()}
-                    </span>
-                  </DialogDescription>
-                </>
-              )}
-            </DialogHeader>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-              <DialogClose asChild>
-                <Button variant="default" onClick={handleCreateAddQuestion}>
-                  Buat
+
+          {/* ================= ACTION ================= */}
+          <div className="flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs leading-5 text-slate-400">
+              Pastikan seluruh informasi soal sudah benar sebelum disimpan.
+            </p>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  type="button"
+                  disabled={!isFormFilled()}
+                  className="w-full rounded-xl bg-blue-600 px-7 py-3 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                >
+                  Buat Soal
                 </Button>
-              </DialogClose>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              </DialogTrigger>
+
+              <DialogContent className="max-h-[85vh] overflow-y-auto rounded-2xl sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-bold">
+                    Periksa Soal
+                  </DialogTitle>
+
+                  <DialogDescription className="pt-2 leading-6">
+                    Pastikan pertanyaan dan jawaban sudah benar sebelum
+                    menambahkan soal.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="mt-4 space-y-4">
+                  {/* Question Preview */}
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wider text-blue-600">
+                      Pertanyaan
+                    </p>
+
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
+                      {question}
+                    </p>
+                  </div>
+
+                  {/* Multiple Choice Preview */}
+                  {chooseTypeExams === "pg" && (
+                    <>
+                      <div className="space-y-2">
+                        {["a", "b", "c", "d", "e"].map((option) => {
+                          const answerKey = `answer_${option}`;
+
+                          return (
+                            <div
+                              key={option}
+                              className={`flex items-start gap-3 rounded-xl border p-3 ${
+                                selectCorrectAnswer === option
+                                  ? "border-emerald-200 bg-emerald-50"
+                                  : "border-slate-200 bg-white"
+                              }`}
+                            >
+                              <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold uppercase text-slate-600">
+                                {option}
+                              </span>
+
+                              <span className="text-sm leading-6 text-slate-700">
+                                {answer[answerKey] ||
+                                  `Opsi ${option.toUpperCase()}`}
+                              </span>
+
+                              {selectCorrectAnswer === option && (
+                                <span className="ml-auto rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-600">
+                                  Benar
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+
+                  {/* Essay Preview */}
+                  {chooseTypeExams === "essay" && (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-xs font-bold uppercase tracking-wider text-blue-600">
+                        Tipe Jawaban
+                      </p>
+
+                      <p className="mt-2 text-sm font-semibold text-slate-700">
+                        Essay
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <DialogFooter className="mt-5 gap-2">
+                  <DialogClose asChild>
+                    <Button variant="outline" className="rounded-xl">
+                      Batal
+                    </Button>
+                  </DialogClose>
+
+                  <DialogClose asChild>
+                    <Button
+                      variant="default"
+                      onClick={handleCreateAddQuestion}
+                      className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                    >
+                      Simpan Soal
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </form>
       </div>
     </div>
   );

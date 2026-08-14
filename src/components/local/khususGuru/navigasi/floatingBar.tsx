@@ -5,43 +5,74 @@ import {
   Wrench,
 } from "lucide-react";
 
-export default function FloatingBarDashboardTeacher({ handleClickItem }: any) {
+type FloatingBarDashboardTeacherProps = {
+  handleClickItem: (itemId: string) => void;
+  activeItem: string;
+};
+
+const menuItems = [
+  {
+    id: "scheduleExams",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    id: "createQuestions",
+    label: "Buat Soal",
+    icon: FilePlus2,
+  },
+  {
+    id: "viewResult",
+    label: "Kelola Ujian",
+    icon: Wrench,
+  },
+  {
+    id: "manageStudent",
+    label: "Nilai Siswa",
+    icon: ClipboardList,
+  },
+];
+
+export default function FloatingBarDashboardTeacher({
+  handleClickItem,
+  activeItem,
+}: FloatingBarDashboardTeacherProps) {
   return (
-    <div className="mx-auto sticky top-3 z-10 w-full lg:w-11/12">
-      <ul className="bg-[#476EAE] flex items-center text-slate-200 font-medium text-base p-4 sm:text-xl rounded-md justify-evenly gap-x-3 shadow-md shadow-slate-700">
-        <li
-          className="cursor-pointer hover:text-slate-300 flex justify-center items-center gap-y-1 flex-col"
-          id="scheduleExams"
-          onClick={(e) => handleClickItem(e.currentTarget.id)}
-        >
-          <LayoutDashboard className="size-7" />
-          <span>Dashboard</span>
-        </li>
-        <li
-          className="cursor-pointer hover:text-slate-300 flex justify-center items-center gap-y-1 flex-col"
-          id="createQuestions"
-          onClick={(e) => handleClickItem(e.currentTarget.id)}
-        >
-          <FilePlus2 className="size-7" />
-          <span>Buat Soal</span>
-        </li>
-        <li
-          className="cursor-pointer hover:text-slate-300 flex justify-center items-center gap-y-1 flex-col"
-          id="viewResult"
-          onClick={(e) => handleClickItem(e.currentTarget.id)}
-        >
-          <Wrench className="size-7" />
-          <span>Kelola Ujian</span>
-        </li>
-        <li
-          className="cursor-pointer hover:text-slate-300 flex justify-center items-center gap-y-1 flex-col"
-          id="manageStudent"
-          onClick={(e) => handleClickItem(e.currentTarget.id)}
-        >
-          <ClipboardList className="size-7" />
-          <span>Nilai Siswa</span>
-        </li>
-      </ul>
+    <div className="sticky top-4 z-20 mx-auto w-full">
+      <nav className="overflow-x-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-lg shadow-slate-200/60">
+        <ul className="flex min-w-max items-center gap-1 sm:grid sm:min-w-0 sm:grid-cols-4">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeItem === item.id;
+
+            return (
+              <li key={item.id} className="flex-1">
+                <button
+                  type="button"
+                  onClick={() => handleClickItem(item.id)}
+                  className={`group flex w-full min-w-[110px] items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 sm:min-w-0 ${
+                    isActive
+                      ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                      : "text-slate-500 hover:bg-blue-50 hover:text-blue-600"
+                  }`}
+                >
+                  <span
+                    className={`flex size-9 items-center justify-center rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-white/15"
+                        : "bg-slate-100 group-hover:bg-blue-100"
+                    }`}
+                  >
+                    <Icon className="size-5" strokeWidth={1.8} />
+                  </span>
+
+                  <span>{item.label}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </div>
   );
 }
