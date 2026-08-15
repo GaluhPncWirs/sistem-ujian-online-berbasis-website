@@ -6,21 +6,6 @@ import { usePathname } from "next/navigation";
 import ListSidebar from "@/components/global/listSidebar/content";
 import { useShallow } from "zustand/shallow";
 import DialogFormAddDataUser from "@/components/global/dialogTipeAkun/content";
-import Link from "next/link";
-import Image from "next/image";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Home, LayoutDashboard, LogOut, Menu, User2 } from "lucide-react";
-import { useHandleLogout } from "@/app/hooks/getHandleLogout";
 
 export default function MainContent({ children }: React.PropsWithChildren) {
   const { loadingSession, statusToken } = useVerifyToken();
@@ -54,7 +39,7 @@ export default function MainContent({ children }: React.PropsWithChildren) {
           loadingSession ? "pointer-events-none opacity-60" : ""
         }`}
       >
-        {pathName === "/Student/Exams/StartExam" ? (
+        {pathName.startsWith("/Student/Exams/StartExam") ? (
           children
         ) : (
           <div className="min-h-screen">

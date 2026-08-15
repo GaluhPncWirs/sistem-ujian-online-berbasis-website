@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { SoalUjian } from "@/types/halamanUjian";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
-import { Flag, List, Timer } from "lucide-react";
+import { Flag, List, Timer, X } from "lucide-react";
 import MainContent from "@/layout/mainContent/content";
 
 export default function StartExam() {
@@ -303,392 +303,463 @@ export default function StartExam() {
   return (
     <MainContent>
       {questionsExam ? (
-        <>
-          {/* ================= EXAM SIDEBAR ================= */}
-          <aside
-            ref={handleClickedOutsideContent}
-            className={`fixed inset-y-0 left-0 z-40 w-[290px] bg-slate-950 text-white shadow-2xl transition-transform duration-300 md:static md:w-[300px] md:translate-x-0 ${
-              isSizeMobile
-                ? showInformationExam
-                  ? "translate-x-0"
-                  : "-translate-x-full"
-                : ""
-            }`}
-          >
-            <div className="flex h-full flex-col">
-              {/* Sidebar Header */}
-              <div className="border-b border-white/10 px-5 py-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-300">
-                  Exam Session
-                </p>
+        <div className="min-h-screen bg-slate-100">
+          {/* ================= MOBILE OVERLAY ================= */}
+          {isSizeMobile && showInformationExam && (
+            <button
+              type="button"
+              aria-label="Tutup navigasi soal"
+              onClick={() => {
+                setShowInformationExam(false);
+                setIsClosedContent(true);
+              }}
+              className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-[2px] md:hidden"
+            />
+          )}
 
-                <h2 className="mt-1 text-xl font-bold">Navigasi Soal</h2>
+          <div className="flex min-h-screen">
+            {/* ================= SIDEBAR ================= */}
+            <div className="min-h-screen">
+              {/* Overlay mobile */}
+              {isSizeMobile && showInformationExam && (
+                <button
+                  type="button"
+                  aria-label="Tutup navigasi soal"
+                  onClick={() => {
+                    setShowInformationExam(false);
+                    setIsClosedContent(true);
+                  }}
+                  className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+                />
+              )}
 
-                <div className="mt-5 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs text-slate-400">Tipe Ujian</p>
+              {/* Sidebar */}
+              <aside
+                ref={handleClickedOutsideContent}
+                className={`
+      fixed inset-y-0 left-0 z-50
+      w-[300px] max-w-[85vw]
+      bg-slate-950 text-white shadow-2xl
+      transition-transform duration-300 ease-out
 
-                    <p className="mt-1 text-sm font-semibold text-white">
-                      {questionsExam?.tipe_ujian === "pg"
-                        ? "Pilihan Ganda"
-                        : "Essay"}
-                    </p>
-                  </div>
+      ${
+        isSizeMobile && !showInformationExam
+          ? "-translate-x-full"
+          : "translate-x-0"
+      }
 
-                  {/* Timer */}
-                  {formatedTime !== "NaN:NaN" && (
-                    <div
-                      className={`flex min-w-[110px] items-center justify-center gap-2 rounded-xl px-3 py-2 ${
-                        minute === 0 && second <= 20
-                          ? "bg-red-500 text-white animate-pulse"
-                          : "bg-emerald-500 text-white"
-                      }`}
-                    >
-                      <Timer className="size-5" />
-
-                      <span className="font-mono text-lg font-bold tabular-nums">
-                        {formatedTime}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Question Navigation */}
-              <div className="flex-1 overflow-y-auto px-5 py-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-300">
-                    Daftar Soal
-                  </h3>
-
-                  <span className="text-xs text-slate-500">
-                    {dataUjianRandom.length} soal
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-5 gap-2">
-                  {dataUjianRandom.map((item: any, i: number) => {
-                    const isAnswerPg = clickedAnswerPg[item.id];
-                    const isAnswerEssay = answerEssayExams[item.id];
-                    const isMarking = markQuestions[item.id];
-
-                    const isAnswered =
-                      questionsExam?.tipe_ujian === "pg"
-                        ? Boolean(isAnswerPg)
-                        : Boolean(isAnswerEssay);
-
-                    return (
-                      <button
-                        type="button"
-                        key={item.id ?? i}
-                        className={`relative flex aspect-square items-center justify-center rounded-xl text-sm font-bold transition-all ${
-                          isAnswered
-                            ? "bg-emerald-500 text-white hover:bg-emerald-400"
-                            : "bg-white/10 text-slate-300 hover:bg-white/20"
-                        }`}
-                      >
-                        {isMarking &&
-                          ((questionsExam?.tipe_ujian === "pg" &&
-                            !isAnswerPg) ||
-                            (questionsExam?.tipe_ujian === "essay" &&
-                              !isAnswerEssay)) && (
-                            <Flag className="absolute left-1 top-1 size-3 text-amber-300" />
-                          )}
-
-                        {i + 1}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Legend */}
-                <div className="mt-7 space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Keterangan
-                  </p>
-
-                  <div className="flex items-center gap-3 text-xs text-slate-300">
-                    <span className="size-3 rounded bg-emerald-500" />
-                    Sudah dijawab
-                  </div>
-
-                  <div className="flex items-center gap-3 text-xs text-slate-300">
-                    <span className="size-3 rounded bg-white/20" />
-                    Belum dijawab
-                  </div>
-
-                  <div className="flex items-center gap-3 text-xs text-slate-300">
-                    <Flag className="size-3 text-amber-300" />
-                    Ditandai
-                  </div>
-                </div>
-              </div>
-
-              {/* Sidebar Bottom */}
-              <div className="border-t border-white/10 p-5">
-                <div className="rounded-2xl bg-white/5 p-4">
-                  <p className="text-xs text-slate-400">
-                    Pastikan seluruh jawaban telah diperiksa sebelum mengakhiri
-                    ujian.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {/* ================= MAIN EXAM CONTENT ================= */}
-          <main className="min-h-screen bg-slate-100 md:ml-0">
-            <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 sm:py-8">
-              {/* Exam Header */}
-              <section className="sticky top-0 z-20 mb-5 rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm backdrop-blur-xl sm:p-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">
-                      Ujian Aktif
-                    </p>
-
-                    <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-                      {questionsExam.exams.nama_ujian}
-                    </h1>
-                  </div>
-
-                  <div className="flex items-center gap-3 md:hidden">
-                    {formatedTime !== "NaN:NaN" && (
-                      <div
-                        className={`flex items-center gap-2 rounded-xl px-4 py-2 font-mono font-bold ${
-                          minute === 0 && second <= 20
-                            ? "bg-red-50 text-red-600"
-                            : "bg-emerald-50 text-emerald-600"
-                        }`}
-                      >
-                        <Timer className="size-5" />
-                        {formatedTime}
-                      </div>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowInformationExam(true);
-                        setIsClosedContent(false);
-                      }}
-                      className="flex size-11 items-center justify-center rounded-xl bg-slate-900 text-white"
-                    >
-                      <List className="size-5" />
-                    </button>
-                  </div>
-                </div>
-              </section>
-
-              {/* Questions */}
-              <div className="space-y-5">
-                {dataUjianRandom.map((item: any, i: number) => (
-                  <section
-                    key={item.id}
-                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"
-                  >
-                    {/* Question Header */}
-                    <div className="flex items-start gap-4">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-extrabold text-white">
-                        {String(i + 1).padStart(2, "0")}
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                          Pertanyaan {i + 1}
+      lg:translate-x-0
+      lg:max-w-none
+      lg:shadow-xl
+    `}
+              >
+                <div className="flex h-screen flex-col">
+                  {/* Header */}
+                  <div className="shrink-0 border-b border-white/10 px-4 py-4 sm:px-5 sm:py-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-blue-300 sm:text-xs">
+                          Exam Session
                         </p>
 
-                        <h2 className="mt-1 text-lg font-bold leading-7 text-slate-900 sm:text-xl">
-                          {item.questions}
+                        <h2 className="mt-1 truncate text-lg font-bold sm:text-xl">
+                          Navigasi Soal
                         </h2>
                       </div>
-                    </div>
 
-                    {/* Multiple Choice */}
-                    {questionsExam?.tipe_ujian === "pg" ? (
-                      <div className="mt-6 space-y-3">
-                        {["a", "b", "c", "d", "e"].map((opt) => {
-                          const answerKey = `answer_${opt}`;
-                          const answerText = item.answerPg[answerKey];
-
-                          const isSelected =
-                            clickedAnswerPg[item.id] === answerText;
-
-                          return (
-                            <label
-                              key={opt}
-                              className={`group flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
-                                isSelected
-                                  ? "border-blue-300 bg-blue-50 shadow-sm"
-                                  : "border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50/40"
-                              }`}
-                            >
-                              <Input
-                                type="radio"
-                                name={item.id}
-                                className="mt-0.5 size-5 cursor-pointer accent-blue-600"
-                                checked={isSelected}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    handleSelectedAnswer(item.id, answerText);
-                                  }
-                                }}
-                                ref={clickedAnswerQuestions}
-                              />
-
-                              <span
-                                className={`flex size-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${
-                                  isSelected
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-slate-100 text-slate-500"
-                                }`}
-                              >
-                                {opt.toUpperCase()}
-                              </span>
-
-                              <span className="pt-0.5 text-sm font-medium leading-6 text-slate-700 sm:text-base">
-                                {answerText}
-                              </span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      /* Essay */
-                      <div className="mt-6">
-                        <label
-                          htmlFor={item.id}
-                          className="mb-2 block text-sm font-semibold text-slate-700"
-                        >
-                          Jawaban Anda
-                        </label>
-
-                        <Textarea
-                          id={item.id}
-                          placeholder="Tuliskan jawaban Anda di sini..."
-                          className="min-h-36 resize-y rounded-xl border-slate-200 bg-slate-50 p-4 text-sm leading-6 focus:bg-white"
-                          onCopy={(e) => e.preventDefault()}
-                          onPaste={(e) => e.preventDefault()}
-                          onCut={(e) => e.preventDefault()}
-                          onChange={(e) =>
-                            setAnswerEssayExams((prev: any) => ({
-                              ...prev,
-                              [item.id]: e.target.value,
-                            }))
-                          }
-                          value={answerEssayExams[item.id] || ""}
-                        />
-                      </div>
-                    )}
-
-                    {/* Mark */}
-                    <div className="mt-5 flex justify-end">
-                      <Button
+                      <button
                         type="button"
-                        variant="outline"
-                        className={`rounded-xl ${
-                          markQuestions[item.id]
-                            ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
-                            : "border-slate-200"
-                        }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-
-                          setMarkQuestions((prev: any) => ({
-                            ...prev,
-                            [item.id]: !prev[item.id],
-                          }));
+                        onClick={() => {
+                          setShowInformationExam(false);
+                          setIsClosedContent(true);
                         }}
-                        ref={clickedMarkQuestions}
+                        className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-slate-300 hover:bg-white/20 lg:hidden"
                       >
-                        <Flag className="mr-2 size-4" />
-                        {markQuestions[item.id]
-                          ? "Batal Tandai"
-                          : "Tandai Soal"}
-                      </Button>
+                        <X className="size-5" />
+                      </button>
                     </div>
-                  </section>
-                ))}
-              </div>
 
-              {/* Submit */}
-              <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h2 className="font-bold text-slate-900">
-                      Sudah selesai mengerjakan?
-                    </h2>
+                    {/* Timer */}
+                    <div className="mt-5 grid grid-cols-2 gap-3">
+                      <div className="min-w-0 rounded-xl bg-white/5 p-3">
+                        <p className="text-[11px] text-slate-400">Tipe Ujian</p>
 
-                    <p className="mt-1 text-sm text-slate-500">
-                      Pastikan jawaban sudah diperiksa sebelum mengakhiri ujian.
-                    </p>
+                        <p className="mt-1 truncate text-sm font-semibold">
+                          {questionsExam?.tipe_ujian === "pg"
+                            ? "Pilihan Ganda"
+                            : "Essay"}
+                        </p>
+                      </div>
+
+                      {formatedTime !== "NaN:NaN" && (
+                        <div
+                          className={`
+                flex min-h-[58px] items-center justify-center gap-2
+                rounded-xl px-2
+                ${
+                  minute === 0 && second <= 20
+                    ? "animate-pulse bg-red-500"
+                    : "bg-emerald-500"
+                }
+              `}
+                        >
+                          <Timer className="size-5 shrink-0" />
+
+                          <span className="truncate font-mono text-sm font-bold tabular-nums">
+                            {formatedTime}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button className="w-full rounded-xl bg-blue-600 px-7 py-3 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700 sm:w-auto">
-                        Selesai Ujian
-                      </Button>
-                    </DialogTrigger>
+                  {/* Questions */}
+                  <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-5">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-slate-300">
+                        Daftar Soal
+                      </h3>
 
-                    <DialogContent className="rounded-2xl sm:max-w-md">
-                      <DialogHeader>
-                        {handleAnswerEmpty() === false ? (
-                          <>
-                            <DialogTitle className="text-xl font-bold">
-                              Jawaban Belum Lengkap
-                            </DialogTitle>
+                      <span className="text-xs text-slate-500">
+                        {dataUjianRandom.length} soal
+                      </span>
+                    </div>
 
-                            <DialogDescription className="pt-2 leading-6">
-                              Masih terdapat jawaban yang belum diisi. Apakah
-                              Anda yakin ingin mengakhiri sesi ujian ini?
-                            </DialogDescription>
-                          </>
-                        ) : (
-                          <>
-                            <DialogTitle className="text-xl font-bold">
-                              Konfirmasi Ujian
-                            </DialogTitle>
+                    <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
+                      {dataUjianRandom.map((item: any, i: number) => {
+                        const isAnswerPg = clickedAnswerPg[item.id];
+                        const isAnswerEssay = answerEssayExams[item.id];
+                        const isMarking = markQuestions[item.id];
 
-                            <DialogDescription className="pt-2 leading-6">
-                              Apakah Anda yakin ingin menyelesaikan ujian ini?
-                            </DialogDescription>
-                          </>
-                        )}
-                      </DialogHeader>
+                        const isAnswered =
+                          questionsExam?.tipe_ujian === "pg"
+                            ? Boolean(isAnswerPg)
+                            : Boolean(isAnswerEssay);
 
-                      <DialogFooter className="mt-4 gap-2">
-                        <DialogClose asChild>
-                          <Button variant="outline" className="rounded-xl">
-                            Kembali
-                          </Button>
-                        </DialogClose>
-
-                        <DialogClose asChild>
-                          <Button
-                            onClick={handleSendExam}
-                            className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                        return (
+                          <button
+                            type="button"
+                            key={item.id ?? i}
+                            className={`relative aspect-square min-w-0 rounded-lg text-xs font-bold sm:rounded-xl sm:text-sm ${
+                              isAnswered
+                                ? "bg-emerald-500 text-white hover:bg-emerald-400"
+                                : "bg-white/10 text-slate-300 hover:bg-white/20"
+                            }`}
                           >
-                            Akhiri Ujian
-                          </Button>
-                        </DialogClose>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                            {isMarking &&
+                              ((questionsExam?.tipe_ujian === "pg" &&
+                                !isAnswerPg) ||
+                                (questionsExam?.tipe_ujian === "essay" &&
+                                  !isAnswerEssay)) && (
+                                <Flag className="absolute left-1 top-1 size-2.5 text-amber-300 sm:size-3" />
+                              )}
+
+                            {i + 1}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="shrink-0 border-t border-white/10 p-4 sm:p-5">
+                    <div className="rounded-xl bg-white/5 p-3 sm:rounded-2xl sm:p-4">
+                      <p className="text-[11px] leading-5 text-slate-400 sm:text-xs">
+                        Pastikan seluruh jawaban telah diperiksa sebelum
+                        mengakhiri ujian.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </section>
+              </aside>
+
+              {/* Main */}
+              <main className="min-h-screen min-w-0 ml-0 lg:ml-[240px]">
+                <div className="mx-auto w-full max-w-5xl p-0 sm:p-5 lg:p-8">
+                  {/* content */}
+                </div>
+              </main>
             </div>
-          </main>
+
+            {/* ================= MAIN CONTENT ================= */}
+            <main className="min-w-0 flex-1">
+              <div className="mx-auto w-full max-w-6xl p-3 sm:p-5 lg:p-8">
+                {/* Exam Header */}
+                <section className="sticky top-0 z-30 mb-4 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur-xl sm:mb-5 sm:rounded-2xl sm:p-5 lg:p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-blue-600 sm:text-xs">
+                        Ujian Aktif
+                      </p>
+
+                      <h1 className="mt-1 truncate text-lg font-extrabold tracking-tight text-slate-900 sm:text-2xl lg:text-3xl">
+                        {questionsExam.exams.nama_ujian}
+                      </h1>
+                    </div>
+
+                    {/* Mobile Controls */}
+                    <div className="flex shrink-0 items-center gap-2 md:hidden">
+                      {formatedTime !== "NaN:NaN" && (
+                        <div
+                          className={`
+                    flex items-center gap-1.5 rounded-lg px-2.5 py-2
+                    font-mono text-xs font-bold tabular-nums
+                    sm:gap-2 sm:rounded-xl sm:px-3 sm:text-sm
+                    ${
+                      minute === 0 && second <= 20
+                        ? "bg-red-50 text-red-600"
+                        : "bg-emerald-50 text-emerald-600"
+                    }
+                  `}
+                        >
+                          <Timer className="size-4 sm:size-5" />
+                          <span>{formatedTime}</span>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowInformationExam(true);
+                          setIsClosedContent(false);
+                        }}
+                        className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white sm:size-10 sm:rounded-xl"
+                        aria-label="Buka navigasi soal"
+                      >
+                        <List className="size-4 sm:size-5" />
+                      </button>
+                    </div>
+                  </div>
+                </section>
+
+                {/* ================= QUESTIONS ================= */}
+                <div className="space-y-4 sm:space-y-5">
+                  {dataUjianRandom.map((item: any, i: number) => (
+                    <section
+                      key={item.id}
+                      className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:rounded-2xl sm:p-6 lg:p-7"
+                    >
+                      {/* Question Header */}
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-xs font-extrabold text-white sm:size-10 sm:rounded-xl sm:text-sm">
+                          {String(i + 1).padStart(2, "0")}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 sm:text-xs">
+                            Pertanyaan {i + 1}
+                          </p>
+
+                          <h2 className="mt-1 break-words text-base font-bold leading-6 text-slate-900 sm:text-lg sm:leading-7 lg:text-xl">
+                            {item.questions}
+                          </h2>
+                        </div>
+                      </div>
+
+                      {/* PG */}
+                      {questionsExam?.tipe_ujian === "pg" ? (
+                        <div className="mt-5 space-y-2.5 sm:mt-6 sm:space-y-3">
+                          {["a", "b", "c", "d", "e"].map((opt) => {
+                            const answerKey = `answer_${opt}`;
+                            const answerText = item.answerPg[answerKey];
+
+                            const isSelected =
+                              clickedAnswerPg[item.id] === answerText;
+
+                            return (
+                              <label
+                                key={opt}
+                                className={`
+                          flex cursor-pointer items-start
+                          gap-2.5 rounded-xl border p-3
+                          transition-all sm:gap-3 sm:p-4
+                          ${
+                            isSelected
+                              ? "border-blue-300 bg-blue-50 shadow-sm"
+                              : "border-slate-200 bg-white hover:border-blue-200 hover:bg-blue-50/40"
+                          }
+                        `}
+                              >
+                                <Input
+                                  type="radio"
+                                  name={item.id}
+                                  className="mt-0.5 size-4 shrink-0 cursor-pointer accent-blue-600 sm:size-5"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      handleSelectedAnswer(item.id, answerText);
+                                    }
+                                  }}
+                                  ref={clickedAnswerQuestions}
+                                />
+
+                                <span
+                                  className={`
+                            flex size-7 shrink-0 items-center
+                            justify-center rounded-lg text-[11px]
+                            font-bold sm:size-8 sm:text-xs
+                            ${
+                              isSelected
+                                ? "bg-blue-600 text-white"
+                                : "bg-slate-100 text-slate-500"
+                            }
+                          `}
+                                >
+                                  {opt.toUpperCase()}
+                                </span>
+
+                                <span className="min-w-0 flex-1 break-words text-sm font-medium leading-6 text-slate-700 sm:text-base">
+                                  {answerText}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        /* Essay */
+                        <div className="mt-5 sm:mt-6">
+                          <label
+                            htmlFor={item.id}
+                            className="mb-2 block text-sm font-semibold text-slate-700"
+                          >
+                            Jawaban Anda
+                          </label>
+
+                          <Textarea
+                            id={item.id}
+                            placeholder="Tuliskan jawaban Anda di sini..."
+                            className="min-h-32 w-full resize-y rounded-xl border-slate-200 bg-slate-50 p-3 text-sm leading-6 focus:bg-white sm:min-h-36 sm:p-4"
+                            onCopy={(e) => e.preventDefault()}
+                            onPaste={(e) => e.preventDefault()}
+                            onCut={(e) => e.preventDefault()}
+                            onChange={(e) =>
+                              setAnswerEssayExams((prev: any) => ({
+                                ...prev,
+                                [item.id]: e.target.value,
+                              }))
+                            }
+                            value={answerEssayExams[item.id] || ""}
+                          />
+                        </div>
+                      )}
+
+                      {/* Mark */}
+                      <div className="mt-4 flex justify-end sm:mt-5">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={`
+                    h-9 rounded-lg px-3 text-xs sm:h-10 sm:rounded-xl sm:px-4 sm:text-sm
+                    ${
+                      markQuestions[item.id]
+                        ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
+                        : "border-slate-200"
+                    }
+                  `}
+                          onClick={(e) => {
+                            e.stopPropagation();
+
+                            setMarkQuestions((prev: any) => ({
+                              ...prev,
+                              [item.id]: !prev[item.id],
+                            }));
+                          }}
+                          ref={clickedMarkQuestions}
+                        >
+                          <Flag className="mr-1.5 size-3.5 sm:mr-2 sm:size-4" />
+
+                          {markQuestions[item.id]
+                            ? "Batal Tandai"
+                            : "Tandai Soal"}
+                        </Button>
+                      </div>
+                    </section>
+                  ))}
+                </div>
+
+                {/* ================= SUBMIT ================= */}
+                <section className="mt-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:mt-6 sm:rounded-2xl sm:p-5 lg:p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <h2 className="text-sm font-bold text-slate-900 sm:text-base">
+                        Sudah selesai mengerjakan?
+                      </h2>
+
+                      <p className="mt-1 text-xs leading-5 text-slate-500 sm:text-sm">
+                        Pastikan jawaban sudah diperiksa sebelum mengakhiri
+                        ujian.
+                      </p>
+                    </div>
+
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="w-full rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700 sm:w-auto">
+                          Selesai Ujian
+                        </Button>
+                      </DialogTrigger>
+
+                      <DialogContent className="w-[calc(100%-2rem)] rounded-2xl sm:max-w-md">
+                        <DialogHeader>
+                          {handleAnswerEmpty() === false ? (
+                            <>
+                              <DialogTitle className="text-lg font-bold sm:text-xl">
+                                Jawaban Belum Lengkap
+                              </DialogTitle>
+
+                              <DialogDescription className="pt-2 text-sm leading-6">
+                                Masih terdapat jawaban yang belum diisi. Apakah
+                                Anda yakin ingin mengakhiri sesi ujian ini?
+                              </DialogDescription>
+                            </>
+                          ) : (
+                            <>
+                              <DialogTitle className="text-lg font-bold sm:text-xl">
+                                Konfirmasi Ujian
+                              </DialogTitle>
+
+                              <DialogDescription className="pt-2 text-sm leading-6">
+                                Apakah Anda yakin ingin menyelesaikan ujian ini?
+                              </DialogDescription>
+                            </>
+                          )}
+                        </DialogHeader>
+
+                        <DialogFooter className="mt-4 flex-col gap-2 sm:flex-row">
+                          <DialogClose asChild>
+                            <Button
+                              variant="outline"
+                              className="w-full rounded-xl sm:w-auto"
+                            >
+                              Kembali
+                            </Button>
+                          </DialogClose>
+
+                          <DialogClose asChild>
+                            <Button
+                              onClick={handleSendExam}
+                              className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 sm:w-auto"
+                            >
+                              Akhiri Ujian
+                            </Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </section>
+              </div>
+            </main>
+          </div>
 
           {/* ================= TIMEOUT ================= */}
           <AlertDialog open={timeOutDone} onOpenChange={setTimeOutDone}>
-            <AlertDialogContent className="rounded-2xl">
+            <AlertDialogContent className="w-[calc(100%-2rem)] rounded-2xl sm:max-w-md">
               <AlertDialogHeader>
-                <AlertDialogTitle className="text-xl font-bold">
+                <AlertDialogTitle className="text-lg font-bold sm:text-xl">
                   Waktu Telah Habis
                 </AlertDialogTitle>
 
-                <AlertDialogDescription className="leading-6">
+                <AlertDialogDescription className="text-sm leading-6">
                   Ujian telah mencapai batas waktu yang telah ditentukan.
                   Jawaban Anda akan disimpan secara otomatis.
                 </AlertDialogDescription>
@@ -696,7 +767,7 @@ export default function StartExam() {
 
               <AlertDialogFooter>
                 <AlertDialogAction
-                  className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                  className="w-full rounded-xl bg-blue-600 hover:bg-blue-700 sm:w-auto"
                   onClick={handleSendExam}
                 >
                   Oke
@@ -704,7 +775,7 @@ export default function StartExam() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-        </>
+        </div>
       ) : (
         <>
           {/* ================= EXAM SIDEBAR ================= */}

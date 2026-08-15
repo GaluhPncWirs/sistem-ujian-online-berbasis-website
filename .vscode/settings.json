@@ -34,6 +34,7 @@
         "menambahkan dialog konfirmasi pada saat ingin logout akun",
         "memperbaiki bug pada ujian yang telat dan yang tidak",
         "memperbaiki masalah pada card yang tidak muncul pada saat ujian yang deadlinenya sebentar lagi dan juga memperbaiki tombol countdown",
-        "memperbaiki type error pada fungsi hooks getUpComingExam()"
+        "memperbaiki type error pada fungsi hooks getUpComingExam()",
+        "selesai memperbaiki bug pada saat ingin ke halaman ujian"
     ]
 }
