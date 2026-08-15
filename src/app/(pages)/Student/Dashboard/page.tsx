@@ -99,6 +99,8 @@ export default function DashboardStudent() {
   const [lateExam, setLateExam] = useState([]);
   const upcomingExam = getUpComingExam(scheduleExams);
 
+  console.log(upcomingExam);
+
   const filterScoreExams = scheduleExams.filter(
     (exams: { status_exam: boolean; hasil_ujian: string }) => {
       if (!exams.status_exam) return false;
