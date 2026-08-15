@@ -6,10 +6,10 @@ import { jwtDecode } from "jwt-decode";
 export async function proxy(req: NextRequest) {
   const { pathname, searchParams } = req.nextUrl;
   const isStartExam = req.cookies.get("startExam")?.value;
-  const token: any = req.cookies.get("tokenLogin")?.value;
+  const token = req.cookies.get("tokenLogin")?.value;
 
   if (pathname.startsWith("/Student/Exams/StartExam")) {
-    const examId = searchParams.get("idExams");
+    const examId = pathname.split("/")[4];
 
     if (!examId) {
       return NextResponse.redirect(new URL("/Student/Dashboard", req.url));

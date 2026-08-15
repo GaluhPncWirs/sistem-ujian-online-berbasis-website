@@ -6,7 +6,9 @@ import { getTodayIndonesia, parseIndonesianDate } from "@/lib/utils/statusExam";
 
 type PropsGetUpComingExam = {
   dibuat_tgl: string;
-  exams: string;
+  exams: {
+    nama_ujian: string;
+  };
   idExams: number;
   status_exam: boolean | null;
   tenggat_waktu: string;

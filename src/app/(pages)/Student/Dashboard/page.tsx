@@ -38,7 +38,6 @@ import { BarChart3, BellRing, CalendarClock } from "lucide-react";
 import {
   convertToNumber,
   getCurrentTimeInMinutes,
-  getDateKey,
 } from "@/lib/utils/convertDate";
 import { getTodayIndonesia, parseIndonesianDate } from "@/lib/utils/statusExam";
 import { getUpComingExam } from "@/app/hooks/getUpComingExam";
@@ -88,7 +87,7 @@ export default function DashboardStudent() {
   const getIdStudent = useGetIdUsers((state) => state.idUser);
   const dataStudent = useGetDataUsers((state) => state.dataUsers);
   const scheduleExams = useDataExams(dataStudent, getIdStudent);
-  const { push } = useRouter();
+  const route = useRouter();
   const [confirm, setConfirm] = useState(5);
   const [openConfirmDialog, setOpenConfirmDialog] = useState<
     Record<string, boolean>
@@ -98,8 +97,6 @@ export default function DashboardStudent() {
   });
   const [lateExam, setLateExam] = useState([]);
   const upcomingExam = getUpComingExam(scheduleExams);
-
-  console.log(upcomingExam);
 
   const filterScoreExams = scheduleExams.filter(
     (exams: { status_exam: boolean; hasil_ujian: string }) => {
@@ -394,7 +391,7 @@ export default function DashboardStudent() {
                                 upComingExamCard: false,
                               }));
 
-                              push(
+                              route.push(
                                 `/Student/Exams/StartExam/${upcomingExam.idExams}`,
                               );
                             }}
@@ -553,7 +550,7 @@ export default function DashboardStudent() {
                                             badgeStatus: false,
                                           }));
 
-                                          push(
+                                          route.push(
                                             `/Student/Exams/StartExam/${data.idExams}`,
                                           );
                                         }}

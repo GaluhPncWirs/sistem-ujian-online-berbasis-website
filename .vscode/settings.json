@@ -33,6 +33,7 @@
         "selesai untuk merombak desain ui halaman mulai ujian dan juga memperbaiki untuk routing halaman mulai ujian menjadi menggunakan routing parameter",
         "menambahkan dialog konfirmasi pada saat ingin logout akun",
         "memperbaiki bug pada ujian yang telat dan yang tidak",
-        "memperbaiki masalah pada card yang tidak muncul pada saat ujian yang deadlinenya sebentar lagi dan juga memperbaiki tombol countdown"
+        "memperbaiki masalah pada card yang tidak muncul pada saat ujian yang deadlinenya sebentar lagi dan juga memperbaiki tombol countdown",
+        "memperbaiki type error pada fungsi hooks getUpComingExam()"
     ]
 }
