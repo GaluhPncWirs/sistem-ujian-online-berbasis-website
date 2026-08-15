@@ -40,54 +40,8 @@ import {
   getCurrentTimeInMinutes,
   getDateKey,
 } from "@/lib/utils/convertDate";
-
-const MONTHS_ID: Record<string, number> = {
-  Januari: 0,
-  Februari: 1,
-  Maret: 2,
-  April: 3,
-  Mei: 4,
-  Juni: 5,
-  Juli: 6,
-  Agustus: 7,
-  September: 8,
-  Oktober: 9,
-  November: 10,
-  Desember: 11,
-};
-
-function parseIndonesianDate(dateString: string) {
-  const [day, month, year] = dateString.trim().split(" ");
-
-  const monthIndex = MONTHS_ID[month];
-
-  if (!day || !year || monthIndex === undefined) {
-    return null;
-  }
-
-  return {
-    day: Number(day),
-    month: monthIndex,
-    year: Number(year),
-  };
-}
-
-function getTodayIndonesia() {
-  const formatter = new Intl.DateTimeFormat("id-ID", {
-    timeZone: "Asia/Jakarta",
-    day: "numeric",
-    month: "numeric",
-    year: "numeric",
-  });
-
-  const parts = formatter.formatToParts(new Date());
-
-  return {
-    day: Number(parts.find((part) => part.type === "day")?.value),
-    month: Number(parts.find((part) => part.type === "month")?.value) - 1,
-    year: Number(parts.find((part) => part.type === "year")?.value),
-  };
-}
+import { getTodayIndonesia, parseIndonesianDate } from "@/lib/utils/statusExam";
+import { getUpComingExam } from "@/app/hooks/getUpComingExam";
 
 type ExamStatus = "BELUM_MULAI" | "BERLANGSUNG" | "LEWAT";
 
@@ -135,11 +89,15 @@ export default function DashboardStudent() {
   const dataStudent = useGetDataUsers((state) => state.dataUsers);
   const scheduleExams = useDataExams(dataStudent, getIdStudent);
   const { push } = useRouter();
-  const [confirm, setConfirm] = useState<number>(0);
-  const [accepted, setAccepted] = useState<boolean>(false);
+  const [confirm, setConfirm] = useState(5);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState<
+    Record<string, boolean>
+  >({
+    upComingExamCard: false,
+    statusBadge: false,
+  });
   const [lateExam, setLateExam] = useState([]);
-
-  console.log(lateExam);
+  const upcomingExam = getUpComingExam(scheduleExams);
 
   const filterScoreExams = scheduleExams.filter(
     (exams: { status_exam: boolean; hasil_ujian: string }) => {
@@ -243,72 +201,26 @@ export default function DashboardStudent() {
     saveLateExams();
   }, [scheduleExams]);
 
-  function deadlineUjianTercepatHariIni() {
-    const today = getDateKey(new Date());
-    const currentMinute = getCurrentTimeInMinutes();
-
-    const upcomingExams = scheduleExams.filter(
-      (exam: {
-        status_exam: boolean;
-        dibuat_tgl: string;
-        tenggat_waktu: string;
-      }) => {
-        if (exam.status_exam) return false;
-
-        const examDate = getDateKey(exam.dibuat_tgl);
-
-        if (examDate !== today) return false;
-
-        const { start, end } = convertToNumber(exam.tenggat_waktu);
-
-        if (Number.isNaN(start) || Number.isNaN(end)) {
-          return false;
-        }
-
-        // Ujian yang belum selesai
-        return currentMinute < end;
-      },
-    );
-
-    if (upcomingExams.length === 0) {
-      return null;
-    }
-
-    return upcomingExams.reduce(
-      (
-        closestExam: {
-          tenggat_waktu: string;
-        },
-        currentExam: {
-          tenggat_waktu: string;
-        },
-      ) => {
-        const closestDeadline = convertToNumber(closestExam.tenggat_waktu).end;
-
-        const currentDeadline = convertToNumber(currentExam.tenggat_waktu).end;
-
-        return currentDeadline < closestDeadline ? currentExam : closestExam;
-      },
-    );
-  }
-
   useEffect(() => {
-    if (accepted) {
+    if (!openConfirmDialog) {
       setConfirm(5);
-      const timer = setInterval(() => {
-        setConfirm((prev: number) => {
-          if (prev <= 0) {
-            clearInterval(timer);
-            setAccepted(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
+      return;
     }
-  }, [accepted]);
+
+    setConfirm(5);
+
+    const timer = setInterval(() => {
+      setConfirm((prev: number) => {
+        if (prev <= 0) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [openConfirmDialog]);
 
   return (
     <MainContent>
@@ -390,7 +302,7 @@ export default function DashboardStudent() {
             </section>
 
             {/* Deadline Exam */}
-            {deadlineUjianTercepatHariIni() && (
+            {upcomingExam && (
               <section>
                 <div className="mb-4 space-y-2">
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
@@ -417,21 +329,29 @@ export default function DashboardStudent() {
                         </p>
 
                         <h3 className="mt-1 text-xl font-bold text-slate-900">
-                          {deadlineUjianTercepatHariIni()?.exams.nama_ujian}
+                          {upcomingExam?.exams.nama_ujian}
                         </h3>
 
                         <p className="mt-1 text-sm font-medium text-slate-500">
-                          {deadlineUjianTercepatHariIni()?.dibuat_tgl} ·{" "}
-                          {deadlineUjianTercepatHariIni()?.tenggat_waktu}
+                          {upcomingExam?.dibuat_tgl} ·{" "}
+                          {upcomingExam?.tenggat_waktu}
                         </p>
                       </div>
                     </div>
 
-                    <Dialog>
+                    <Dialog
+                      open={openConfirmDialog.upComingExamCard}
+                      onOpenChange={(open) =>
+                        setOpenConfirmDialog((prev) => ({
+                          ...prev,
+                          upComingExamCard: open,
+                        }))
+                      }
+                    >
                       <DialogTrigger asChild>
                         <Button
-                          onClick={() => setAccepted(true)}
                           className="w-full rounded-xl bg-amber-500 px-6 font-semibold text-white shadow-md shadow-amber-500/20 hover:bg-amber-600 sm:w-auto"
+                          onClick={() => setConfirm(5)}
                         >
                           Mulai Ujian
                         </Button>
@@ -446,10 +366,7 @@ export default function DashboardStudent() {
                           <DialogDescription className="pt-2 text-left leading-6">
                             Apakah Anda yakin ingin mengerjakan soal{" "}
                             <span className="font-bold text-slate-900">
-                              "
-                              {deadlineUjianTercepatHariIni()?.exams
-                                .nama_ujian || ""}
-                              "
+                              "{upcomingExam?.exams.nama_ujian || ""}"
                             </span>
                             ?
                             <span className="mt-3 block">
@@ -461,28 +378,29 @@ export default function DashboardStudent() {
 
                         <DialogFooter className="mt-4 gap-2">
                           <DialogClose asChild>
-                            <Button
-                              variant="outline"
-                              onClick={() => setAccepted(false)}
-                              className="rounded-xl"
-                            >
+                            <Button variant="outline" className="rounded-xl">
                               Batal
                             </Button>
                           </DialogClose>
 
-                          <DialogClose asChild>
-                            <Button
-                              onClick={() =>
-                                push(
-                                  `/Student/Exams/StartExam/${deadlineUjianTercepatHariIni().idExams}`,
-                                )
-                              }
-                              className="rounded-xl bg-blue-600 hover:bg-blue-700"
-                              disabled={accepted}
-                            >
-                              {confirm <= 0 ? "Mulai" : confirm}
-                            </Button>
-                          </DialogClose>
+                          <Button
+                            onClick={() => {
+                              if (!upcomingExam) return;
+
+                              setOpenConfirmDialog((prev) => ({
+                                ...prev,
+                                upComingExamCard: false,
+                              }));
+
+                              push(
+                                `/Student/Exams/StartExam/${upcomingExam.idExams}`,
+                              );
+                            }}
+                            className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                            disabled={confirm > 0}
+                          >
+                            {confirm <= 0 ? "Mulai" : confirm}
+                          </Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
@@ -581,9 +499,20 @@ export default function DashboardStudent() {
                                   Lewat Batas Waktu
                                 </span>
                               ) : status === "BERLANGSUNG" ? (
-                                <Dialog>
+                                <Dialog
+                                  open={openConfirmDialog.badgeStatus}
+                                  onOpenChange={(open) =>
+                                    setOpenConfirmDialog((prev) => ({
+                                      ...prev,
+                                      badgeStatus: open,
+                                    }))
+                                  }
+                                >
                                   <DialogTrigger asChild>
-                                    <button className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100">
+                                    <button
+                                      className="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 transition-colors hover:bg-blue-100"
+                                      onClick={() => setConfirm(5)}
+                                    >
                                       Sedang Berlangsung
                                     </button>
                                   </DialogTrigger>
@@ -614,15 +543,22 @@ export default function DashboardStudent() {
                                       </DialogClose>
 
                                       <Button
-                                        type="button"
-                                        onClick={() =>
+                                        onClick={() => {
+                                          if (!upcomingExam) return;
+
+                                          setOpenConfirmDialog((prev) => ({
+                                            ...prev,
+                                            badgeStatus: false,
+                                          }));
+
                                           push(
                                             `/Student/Exams/StartExam/${data.idExams}`,
-                                          )
-                                        }
+                                          );
+                                        }}
                                         className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                                        disabled={confirm > 0}
                                       >
-                                        Mulai
+                                        {confirm <= 0 ? "Mulai" : confirm}
                                       </Button>
                                     </DialogFooter>
                                   </DialogContent>
