@@ -1,14 +1,21 @@
 import { supabase } from "@/lib/supabase/data";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
-  const parameterIdExam = req.nextUrl.searchParams.get("idExams");
-  const parameteridStudent = req.nextUrl.searchParams.get("idStudent");
+export async function GET(
+  req: NextRequest,
+  context: {
+    params: Promise<{
+      idExam: string;
+      idStudent: string;
+    }>;
+  },
+) {
+  const { idExam, idStudent } = await context.params;
 
   const { data: dataStudent, error: errDataStudent } = await supabase
     .from("account-student")
-    .select("*")
-    .eq("idStudent", parameteridStudent)
+    .select("idStudent, classes")
+    .eq("idStudent", idStudent)
     .single();
 
   if (errDataStudent) {
@@ -21,7 +28,7 @@ export async function GET(req: NextRequest) {
     const { data: dataExams, error: errDataExams }: any = await supabase
       .from("managed_exams")
       .select("*,exams(questions_exam,nama_ujian)")
-      .eq("idExams", Number(parameterIdExam))
+      .eq("idExams", Number(idExam))
       .eq("kelas", dataStudent.classes)
       .single();
 

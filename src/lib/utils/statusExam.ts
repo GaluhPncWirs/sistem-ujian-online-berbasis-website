@@ -1,3 +1,5 @@
+import { convertToNumber, getCurrentTimeInMinutes } from "./convertDate";
+
 const MONTHS_ID: Record<string, number> = {
   Januari: 0,
   Februari: 1,
@@ -44,4 +46,48 @@ export function getTodayIndonesia() {
     month: Number(parts.find((part) => part.type === "month")?.value) - 1,
     year: Number(parts.find((part) => part.type === "year")?.value),
   };
+}
+
+type ExamStatus = "BELUM_MULAI" | "BERLANGSUNG" | "LEWAT";
+
+export function getExamStatus(
+  tenggatWaktu: string,
+  tglUjian: string,
+): ExamStatus {
+  const { start, end } = convertToNumber(tenggatWaktu);
+
+  const examDate = parseIndonesianDate(tglUjian);
+  const today = getTodayIndonesia();
+
+  if (!examDate || Number.isNaN(start) || Number.isNaN(end)) {
+    return "LEWAT";
+  }
+
+  const examDateNumber =
+    examDate.year * 10000 + (examDate.month + 1) * 100 + examDate.day;
+
+  const todayNumber = today.year * 10000 + (today.month + 1) * 100 + today.day;
+
+  const currentMinute = getCurrentTimeInMinutes();
+
+  // Ujian di hari yang akan datang
+  if (examDateNumber > todayNumber) {
+    return "BELUM_MULAI";
+  }
+
+  // Ujian di hari yang sudah lewat
+  if (examDateNumber < todayNumber) {
+    return "LEWAT";
+  }
+
+  // Ujian hari ini
+  if (currentMinute < start) {
+    return "BELUM_MULAI";
+  }
+
+  if (currentMinute >= end) {
+    return "LEWAT";
+  }
+
+  return "BERLANGSUNG";
 }

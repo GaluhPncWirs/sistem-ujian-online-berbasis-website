@@ -51,12 +51,14 @@ export default function Profil() {
     async function getHistoryResultExams() {
       const { data, error } = await supabase
         .from("history-exam-student")
-        .select("student_id,exam_id,hasil_ujian,kelas");
+        .select("student_id,exam_id,hasil_ujian,kelas")
+        .eq("idStudent", getIdStudent)
+        .limit(1);
       if (error) {
         console.log("Gagal mengambil data");
         setResultExamPerClass([]);
       } else {
-        setResultExamPerClass(data ?? []);
+        setResultExamPerClass(data);
       }
     }
     getHistoryResultExams();

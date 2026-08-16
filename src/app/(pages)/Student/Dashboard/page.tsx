@@ -5,7 +5,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/data";
 import {
   Table,
@@ -35,53 +35,8 @@ import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { useGetDataUsers } from "@/store/useGetDataUsers/state";
 import MainContent from "@/layout/mainContent/content";
 import { BarChart3, BellRing, CalendarClock } from "lucide-react";
-import {
-  convertToNumber,
-  getCurrentTimeInMinutes,
-} from "@/lib/utils/convertDate";
-import { getTodayIndonesia, parseIndonesianDate } from "@/lib/utils/statusExam";
+import { getExamStatus } from "@/lib/utils/statusExam";
 import { getUpComingExam } from "@/app/hooks/getUpComingExam";
-
-type ExamStatus = "BELUM_MULAI" | "BERLANGSUNG" | "LEWAT";
-
-function getExamStatus(tenggatWaktu: string, tglUjian: string): ExamStatus {
-  const { start, end } = convertToNumber(tenggatWaktu);
-
-  const examDate = parseIndonesianDate(tglUjian);
-  const today = getTodayIndonesia();
-
-  if (!examDate || Number.isNaN(start) || Number.isNaN(end)) {
-    return "LEWAT";
-  }
-
-  const examDateNumber =
-    examDate.year * 10000 + (examDate.month + 1) * 100 + examDate.day;
-
-  const todayNumber = today.year * 10000 + (today.month + 1) * 100 + today.day;
-
-  const currentMinute = getCurrentTimeInMinutes();
-
-  // Ujian di hari yang akan datang
-  if (examDateNumber > todayNumber) {
-    return "BELUM_MULAI";
-  }
-
-  // Ujian di hari yang sudah lewat
-  if (examDateNumber < todayNumber) {
-    return "LEWAT";
-  }
-
-  // Ujian hari ini
-  if (currentMinute < start) {
-    return "BELUM_MULAI";
-  }
-
-  if (currentMinute >= end) {
-    return "LEWAT";
-  }
-
-  return "BERLANGSUNG";
-}
 
 export default function DashboardStudent() {
   const getIdStudent = useGetIdUsers((state) => state.idUser);
@@ -166,6 +121,16 @@ export default function DashboardStudent() {
     },
     [scheduleExams],
   );
+
+  useEffect(() => {
+    async function getdata() {
+      const req = await fetch("/api/getQuestions/12/STD-aMClguF");
+      const data = await req.json();
+
+      console.log("Response:", data);
+    }
+    getdata();
+  }, []);
 
   useEffect(() => {
     if (!scheduleExams.length) {

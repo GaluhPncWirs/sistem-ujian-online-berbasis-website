@@ -59,7 +59,7 @@ export default function StartExam() {
     async function getDataExams() {
       try {
         const request = await fetch(
-          `/api/getQuestions?idExams=${idExams}&idStudent=${getIdStudent}`,
+          `/api/getQuestions/${idExams}/${getIdStudent}`,
         );
         const response = await request.json();
         if (response.success) {
