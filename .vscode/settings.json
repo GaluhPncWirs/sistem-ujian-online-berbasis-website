@@ -36,6 +36,7 @@
         "memperbaiki masalah pada card yang tidak muncul pada saat ujian yang deadlinenya sebentar lagi dan juga memperbaiki tombol countdown",
         "memperbaiki type error pada fungsi hooks getUpComingExam()",
         "selesai memperbaiki bug pada saat ingin ke halaman ujian",
-        "memperbaiki desain ui dan responsive pada halaman ujian"
+        "memperbaiki desain ui dan responsive pada halaman ujian",
+        "refaktor code bagian fetch api ambil data ujian"
     ]
 }

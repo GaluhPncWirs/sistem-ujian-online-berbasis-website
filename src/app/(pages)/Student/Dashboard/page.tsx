@@ -123,16 +123,6 @@ export default function DashboardStudent() {
   );
 
   useEffect(() => {
-    async function getdata() {
-      const req = await fetch("/api/getQuestions/12/STD-aMClguF");
-      const data = await req.json();
-
-      console.log("Response:", data);
-    }
-    getdata();
-  }, []);
-
-  useEffect(() => {
     if (!scheduleExams.length) {
       setLateExam([]);
       return;

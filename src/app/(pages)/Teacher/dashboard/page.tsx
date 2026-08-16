@@ -2,25 +2,16 @@
 import CreateNewQuestions from "@/components/local/khususGuru/buatSoal/createQuestions";
 import ViewQuestions from "@/components/local/khususGuru/hasilPertanyaan/pertanyaan";
 import ManageStudent from "@/components/local/khususGuru/kelolaSiswa/manageStudent";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { supabase } from "@/lib/supabase/data";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import HeaderDasboard from "@/components/local/forDasboard/content";
 import FloatingBarDashboardTeacher from "@/components/local/khususGuru/navigasi/floatingBar";
-import { getResultExamDataStudent } from "@/app/hooks/getDataResultStudent";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { useGetDataUsers } from "@/store/useGetDataUsers/state";
 import MainContent from "@/layout/mainContent/content";
 import { BarChart3, ClipboardCheck, Layers } from "lucide-react";
 import { useManageDataExams } from "@/app/hooks/getManageDataExams";
 import ListJadwalUjian from "@/components/local/khususGuru/listJadwalUjian/content";
+import { useResultExamDataStudent } from "@/app/hooks/getDataResultStudent";
 
 export default function Teacher() {
   const [dashboardButton, setDashboardButton] = useState({
@@ -29,10 +20,6 @@ export default function Teacher() {
     viewResult: false,
     manageStudent: false,
   });
-  const getidTeacher = useGetIdUsers((state) => state.idUser);
-  const dataUserTeacher = useGetDataUsers((state) => state.dataUsers);
-  const manageDataExams = useManageDataExams(getidTeacher);
-  const dataStudentExams = getResultExamDataStudent(getidTeacher);
 
   function handleClickItem(event: string) {
     setDashboardButton({
@@ -42,16 +29,25 @@ export default function Teacher() {
       manageStudent: event === "manageStudent",
     });
   }
+  const getidTeacher = useGetIdUsers((state) => state.idUser);
+  const dataUserTeacher = useGetDataUsers((state) => state.dataUsers);
+  const manageDataExams = useManageDataExams(getidTeacher);
+  const dataStudentExams = useResultExamDataStudent(getidTeacher);
 
   const jumlahSiswa = new Set(
-    manageDataExams.flatMap((a: any) => a.lengthStudent),
-  );
+    manageDataExams.flatMap((exam) => exam.lengthStudent ?? []),
+  ).size;
 
-  const averageValueExam = manageDataExams
-    ?.flatMap((item: any) => item.hasil_ujian)
-    .filter((a: string) => a !== "pending" && a !== "telat")
+  const examScores = manageDataExams
+    ?.flatMap((item) => item.hasil_ujian ?? [])
+    .filter((value) => value !== "pending" && value !== "telat")
     .map(Number)
-    .reduce((acc: number, cur: number) => acc + cur, 0);
+    .filter(Number.isFinite);
+
+  const averageValueExam =
+    examScores.length > 0
+      ? examScores.reduce((sum, value) => sum + value, 0) / examScores.length
+      : 0;
 
   return (
     <MainContent>
@@ -114,7 +110,7 @@ export default function Teacher() {
                       </p>
 
                       <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                        {jumlahSiswa.size || 0}
+                        {jumlahSiswa || 0}
                       </p>
 
                       <p className="mt-1 text-xs text-slate-400">
@@ -137,7 +133,7 @@ export default function Teacher() {
                       </p>
 
                       <p className="mt-2 text-3xl font-extrabold text-slate-900">
-                        {Math.round(averageValueExam / jumlahSiswa.size) || 0}
+                        {Math.round(averageValueExam / jumlahSiswa) || 0}
                       </p>
 
                       <p className="mt-1 text-xs text-slate-400">

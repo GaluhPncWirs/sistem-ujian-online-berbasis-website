@@ -1,4 +1,4 @@
-import { getResultExamDataStudent } from "@/app/hooks/getDataResultStudent";
+import { useResultExamDataStudent } from "@/app/hooks/getDataResultStudent";
 import {
   HoverCard,
   HoverCardContent,
@@ -18,7 +18,7 @@ import Link from "next/link";
 
 export default function ManageStudent() {
   const idTeacher = useGetIdUsers((state) => state.idUser);
-  const dataStudentExams = getResultExamDataStudent(idTeacher);
+  const dataStudentExams = useResultExamDataStudent(idTeacher);
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       {/* ================= HEADER ================= */}
