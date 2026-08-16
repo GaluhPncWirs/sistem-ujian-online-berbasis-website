@@ -27,32 +27,65 @@ import { useHandleInput } from "@/app/hooks/getHandleInput";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
-const createExamSchema = z.object({
-  typeUjian: z.string().min(1, "Pilih salah satu"),
-  namaUjian: z.string().min(1, "Pilih salah satu"),
-  namaUjianBaru: z.string().min(5, "Minimal 5 karakter"),
-  pertanyaan: z.string().min(5, "Minimal 5 karakter"),
+const createExamSchema = z
+  .object({
+    typeUjian: z.string().min(1, "Pilih salah satu"),
+    namaUjian: z.string().min(1, "Pilih salah satu"),
+    namaUjianBaru: z.string().min(5, "Minimal 5 karakter"),
+    pertanyaan: z.string().min(5, "Minimal 5 karakter"),
 
-  // pilihan ganda
-  opsiA: z.string().min(3, "Minimal 3 karakter"),
-  opsiB: z.string().min(3, "Minimal 3 karakter"),
-  opsiC: z.string().min(3, "Minimal 3 karakter"),
-  opsiD: z.string().min(3, "Minimal 3 karakter"),
-  opsiE: z.string().min(3, "Minimal 3 karakter"),
-  jawabanYangBenar: z.string().min(1, "Pilih salah satu"),
-});
+    // pilihan ganda
+    opsiA: z.string().min(3, "Minimal 3 karakter"),
+    opsiB: z.string().min(3, "Minimal 3 karakter"),
+    opsiC: z.string().min(3, "Minimal 3 karakter"),
+    opsiD: z.string().min(3, "Minimal 3 karakter"),
+    opsiE: z.string().min(3, "Minimal 3 karakter"),
+    jawabanYangBenar: z.string().min(1, "Pilih salah satu"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.namaUjian === "buatUjianBaru" && !data.namaUjianBaru) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Nama ujian baru harus diisi",
+      });
+    }
+
+    if (data.typeUjian === "pg") {
+      if (
+        !data.opsiA ||
+        !data.opsiB ||
+        !data.opsiC ||
+        !data.opsiD ||
+        !data.opsiE
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Semua opsi jawaban harus diisi",
+        });
+      }
+      if (!data.jawabanYangBenar) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Pilih jawaban yang benar",
+        });
+      }
+    }
+  });
 
 type CreateExamSchemaType = z.infer<typeof createExamSchema>;
 
 export default function CreateNewQuestions() {
+  const idTeacher = useGetIdUsers((state) => state.idUser);
+  const dataNameExam = useManageExamsData(idTeacher);
+  const [openDialog, setOpenDialog] = useState(false);
   const {
     control,
     register,
     watch,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isSubmitted },
   } = useForm<CreateExamSchemaType>({
     resolver: zodResolver(createExamSchema),
     defaultValues: {
@@ -71,264 +104,181 @@ export default function CreateNewQuestions() {
     },
   });
 
+  const isNewNameExam = watch("namaUjian");
+  const isTypeExam = watch("typeUjian");
+  const selectedValueNameExam = watch("namaUjian");
+  const answer: Record<
+    "answer_a" | "answer_b" | "answer_c" | "answer_d" | "answer_e",
+    string
+  > = {
+    answer_a: watch("opsiA"),
+    answer_b: watch("opsiB"),
+    answer_c: watch("opsiC"),
+    answer_d: watch("opsiD"),
+    answer_e: watch("opsiE"),
+  };
+  const selectCorrectAnswer = watch("jawabanYangBenar");
+
   async function onSubmit(data: CreateExamSchemaType) {
     console.log(data);
+    setOpenDialog(false);
   }
 
-  const idTeacher = useGetIdUsers((state) => state.idUser);
+  // async function handleCreateAddQuestion() {
+  //   if (!chooseTypeExams || !selectedValueNameExam) {
+  //     toast("Gagal ❌", {
+  //       description: "Pilih Terlebih Dahulu Tipe Dan Nama Ujiannya",
+  //     });
+  //   } else {
+  //     const { data, error }: any = await supabase
+  //       .from("exams")
+  //       .select("nama_ujian")
+  //       .eq("nama_ujian", nameExam);
 
-  const [answer, setAnswer] = useState<Record<string, string>>({
-    answer_a: "",
-    answer_b: "",
-    answer_c: "",
-    answer_d: "",
-    answer_e: "",
-  });
-  const [question, setQuestion] = useState<string>("");
-  const [selectCorrectAnswer, setSelectCorrectAnswer] = useState<string>("");
-  const [nameExam, setNameExams] = useState<string>("");
-  const [chooseTypeExams, setChooseTypeExams] = useState<string>("");
-  const [selectedValueNameExam, setSelectedValueNameExam] =
-    useState<string>("");
-  const [clearInput, setClearInput] = useState<boolean>(false);
-  const dataNameExam = useManageExamsData(idTeacher);
-  const [chooseInputObject, setChooseInputObject] = useState<any>({});
-  const { handleValueInput } = useHandleInput(chooseInputObject);
+  //     if (data?.length > 0) {
+  //       toast("Gagal ❌", {
+  //         description: "Soalnya Sama Seperti Yang Sebelumnya Telah Dibuat",
+  //       });
+  //     } else if (error) {
+  //       toast("Gagal ❌", {
+  //         description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
+  //       });
+  //     } else {
+  //       if (chooseTypeExams === "pg") {
+  //         if (selectedValueNameExam === "buatUjianBaru") {
+  //           const { error }: any = await supabase.from("exams").insert([
+  //             {
+  //               created_at_exams: new Date().toISOString(),
+  //               nama_ujian: nameExam,
+  //               questions_exam: [
+  //                 {
+  //                   id: useRandomId(7, "EX"),
+  //                   questions: question,
+  //                   answerPg: answer,
+  //                   correctAnswer: selectCorrectAnswer,
+  //                 },
+  //               ],
+  //               idTeacher: idTeacher,
+  //               tipeUjian: chooseTypeExams,
+  //             },
+  //           ]);
 
-  useEffect(() => {
-    if (chooseTypeExams === "pg") {
-      if (selectedValueNameExam === "buatUjianBaru") {
-        setChooseInputObject({
-          nama_ujian: nameExam,
-          questions: question,
-          answer,
-          selectCorrectAnswer,
-        });
-      } else {
-        setChooseInputObject({
-          questions: question,
-          answer,
-          selectCorrectAnswer,
-        });
-      }
-    } else {
-      if (selectedValueNameExam === "buatUjianBaru") {
-        setChooseInputObject({
-          nama_ujian: nameExam,
-          questions: question,
-        });
-      } else {
-        setChooseInputObject({
-          questions: question,
-        });
-      }
-    }
-  }, [
-    chooseTypeExams,
-    selectedValueNameExam,
-    nameExam,
-    question,
-    answer,
-    selectCorrectAnswer,
-  ]);
+  //           if (error) {
+  //             toast("Gagal ❌", {
+  //               description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
+  //             });
+  //           } else {
+  //             toast("Berhasil ✅", {
+  //               description: "Soal Pilihan Ganda Berhasil Ditambahkan",
+  //             });
+  //             setClearInput(true);
+  //           }
+  //         } else {
+  //           const { data, error } = await supabase
+  //             .from("exams")
+  //             .select("questions_exam")
+  //             .eq("nama_ujian", selectedValueNameExam)
+  //             .single();
 
-  function isFormFilled() {
-    if (chooseTypeExams === "pg") {
-      const isArray = Object.values(chooseInputObject).filter(
-        (val: any) => typeof val === "string" && val !== null,
-      );
-      const isObject: string[] = Object.values(chooseInputObject.answer || {});
-      const resultData = isArray.concat(isObject);
-      return resultData.every((item: string) => item !== "");
-    }
-    return Object.values(chooseInputObject).every((item) => item !== "");
-  }
+  //           if (error) {
+  //             toast("Gagal ❌", {
+  //               description: "Ujian tidak ditemukan.",
+  //             });
+  //           } else {
+  //             const addQuestions = [
+  //               ...(data.questions_exam || []),
+  //               {
+  //                 id: useRandomId(7, "EX"),
+  //                 questions: question,
+  //                 answerPg: answer,
+  //                 correctAnswer: selectCorrectAnswer,
+  //               },
+  //             ];
+  //             const { error }: any = await supabase
+  //               .from("exams")
+  //               .update({ questions_exam: addQuestions })
+  //               .eq("nama_ujian", selectedValueNameExam);
 
-  function handleAddAnswer(event: React.ChangeEvent<HTMLInputElement>) {
-    const { id, value } = event.target;
-    setAnswer((prev: any) => {
-      return {
-        ...prev,
-        [id]: value,
-      };
-    });
-  }
+  //             if (error) {
+  //               toast("Gagal ❌", {
+  //                 description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
+  //               });
+  //             } else {
+  //               toast("Berhasil ✅", {
+  //                 description: "Soal Berhasil Ditambahkan",
+  //               });
+  //               setClearInput(true);
+  //             }
+  //           }
+  //         }
+  //       } else {
+  //         if (selectedValueNameExam === "buatUjianBaru") {
+  //           const { error: errorAddQuestionsExam } = await supabase
+  //             .from("exams")
+  //             .insert([
+  //               {
+  //                 created_at_exams: new Date().toISOString(),
+  //                 nama_ujian: nameExam,
+  //                 questions_exam: [
+  //                   {
+  //                     id: useRandomId(7, "EX"),
+  //                     questions: question,
+  //                   },
+  //                 ],
+  //                 idTeacher: idTeacher,
+  //                 tipeUjian: chooseTypeExams,
+  //               },
+  //             ]);
+  //           if (errorAddQuestionsExam) {
+  //             toast("Gagal ❌", {
+  //               description: "Soal Gagal Ditambahkan Periksa Kembali Soalnya",
+  //             });
+  //           } else {
+  //             toast("Berhasil ✅", {
+  //               description: "Soal Essay Berhasil Ditambahkan",
+  //             });
+  //             setClearInput(true);
+  //           }
+  //         } else {
+  //           const { data: dataEssay, error: errorDataEssay } = await supabase
+  //             .from("exams")
+  //             .select("questions_exam")
+  //             .eq("nama_ujian", selectedValueNameExam)
+  //             .single();
 
-  async function handleCreateAddQuestion() {
-    if (!chooseTypeExams || !selectedValueNameExam) {
-      toast("Gagal ❌", {
-        description: "Pilih Terlebih Dahulu Tipe Dan Nama Ujiannya",
-      });
-    } else {
-      const { data, error }: any = await supabase
-        .from("exams")
-        .select("nama_ujian")
-        .eq("nama_ujian", nameExam);
+  //           if (errorDataEssay) {
+  //             toast("Gagal ❌", {
+  //               description: "Ujian tidak ditemukan.",
+  //             });
+  //           } else {
+  //             const addEssay = [
+  //               ...(dataEssay.questions_exam || []),
+  //               {
+  //                 id: useRandomId(7, "EX"),
+  //                 questions: question,
+  //               },
+  //             ];
+  //             const { error: errorAddDataEssay } = await supabase
+  //               .from("exams")
+  //               .update({ questions_exam: addEssay })
+  //               .eq("nama_ujian", selectedValueNameExam);
 
-      if (data?.length > 0) {
-        toast("Gagal ❌", {
-          description: "Soalnya Sama Seperti Yang Sebelumnya Telah Dibuat",
-        });
-      } else if (error) {
-        toast("Gagal ❌", {
-          description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
-        });
-      } else {
-        if (chooseTypeExams === "pg") {
-          if (selectedValueNameExam === "buatUjianBaru") {
-            const { error }: any = await supabase.from("exams").insert([
-              {
-                created_at_exams: new Date().toISOString(),
-                nama_ujian: nameExam,
-                questions_exam: [
-                  {
-                    id: useRandomId(7, "EX"),
-                    questions: question,
-                    answerPg: answer,
-                    correctAnswer: selectCorrectAnswer,
-                  },
-                ],
-                idTeacher: idTeacher,
-                tipeUjian: chooseTypeExams,
-              },
-            ]);
-
-            if (error) {
-              toast("Gagal ❌", {
-                description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
-              });
-            } else {
-              toast("Berhasil ✅", {
-                description: "Soal Pilihan Ganda Berhasil Ditambahkan",
-              });
-              setClearInput(true);
-            }
-          } else {
-            const { data, error } = await supabase
-              .from("exams")
-              .select("questions_exam")
-              .eq("nama_ujian", selectedValueNameExam)
-              .single();
-
-            if (error) {
-              toast("Gagal ❌", {
-                description: "Ujian tidak ditemukan.",
-              });
-            } else {
-              const addQuestions = [
-                ...(data.questions_exam || []),
-                {
-                  id: useRandomId(7, "EX"),
-                  questions: question,
-                  answerPg: answer,
-                  correctAnswer: selectCorrectAnswer,
-                },
-              ];
-              const { error }: any = await supabase
-                .from("exams")
-                .update({ questions_exam: addQuestions })
-                .eq("nama_ujian", selectedValueNameExam);
-
-              if (error) {
-                toast("Gagal ❌", {
-                  description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
-                });
-              } else {
-                toast("Berhasil ✅", {
-                  description: "Soal Berhasil Ditambahkan",
-                });
-                setClearInput(true);
-              }
-            }
-          }
-        } else {
-          if (selectedValueNameExam === "buatUjianBaru") {
-            const { error: errorAddQuestionsExam } = await supabase
-              .from("exams")
-              .insert([
-                {
-                  created_at_exams: new Date().toISOString(),
-                  nama_ujian: nameExam,
-                  questions_exam: [
-                    {
-                      id: useRandomId(7, "EX"),
-                      questions: question,
-                    },
-                  ],
-                  idTeacher: idTeacher,
-                  tipeUjian: chooseTypeExams,
-                },
-              ]);
-            if (errorAddQuestionsExam) {
-              toast("Gagal ❌", {
-                description: "Soal Gagal Ditambahkan Periksa Kembali Soalnya",
-              });
-            } else {
-              toast("Berhasil ✅", {
-                description: "Soal Essay Berhasil Ditambahkan",
-              });
-              setClearInput(true);
-            }
-          } else {
-            const { data: dataEssay, error: errorDataEssay } = await supabase
-              .from("exams")
-              .select("questions_exam")
-              .eq("nama_ujian", selectedValueNameExam)
-              .single();
-
-            if (errorDataEssay) {
-              toast("Gagal ❌", {
-                description: "Ujian tidak ditemukan.",
-              });
-            } else {
-              const addEssay = [
-                ...(dataEssay.questions_exam || []),
-                {
-                  id: useRandomId(7, "EX"),
-                  questions: question,
-                },
-              ];
-              const { error: errorAddDataEssay } = await supabase
-                .from("exams")
-                .update({ questions_exam: addEssay })
-                .eq("nama_ujian", selectedValueNameExam);
-
-              if (errorAddDataEssay) {
-                toast("Gagal ❌", {
-                  description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
-                });
-              } else {
-                toast("Berhasil ✅", {
-                  description: "Soal Berhasil Ditambahkan",
-                });
-                setClearInput(true);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  useEffect(() => {
-    if (clearInput) {
-      if (chooseTypeExams === "pg") {
-        setAnswer({
-          answer_a: "",
-          answer_b: "",
-          answer_c: "",
-          answer_d: "",
-          answer_e: "",
-        });
-        setSelectCorrectAnswer("");
-        setQuestion("");
-        setNameExams("");
-      } else if (chooseTypeExams === "essay") {
-        setQuestion("");
-        setNameExams("");
-      }
-    }
-  }, [clearInput, chooseTypeExams]);
+  //             if (errorAddDataEssay) {
+  //               toast("Gagal ❌", {
+  //                 description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
+  //               });
+  //             } else {
+  //               toast("Berhasil ✅", {
+  //                 description: "Soal Berhasil Ditambahkan",
+  //               });
+  //               setClearInput(true);
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -351,7 +301,11 @@ export default function CreateNewQuestions() {
       </div>
 
       <div className="p-5 sm:p-7">
-        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
+        <form
+          className="space-y-8"
+          onSubmit={handleSubmit(onSubmit)}
+          id="create-exam-form"
+        >
           {/* ================= EXAM SETTINGS ================= */}
           <section>
             <div className="mb-4">
@@ -374,20 +328,30 @@ export default function CreateNewQuestions() {
                   Tipe Ujian
                 </label>
 
-                <Select onValueChange={(val) => setChooseTypeExams(val)}>
-                  <SelectTrigger
-                    id="exam-type"
-                    className="h-12 rounded-xl w-full border-slate-200 bg-slate-50 px-4 shadow-none"
-                  >
-                    <SelectValue placeholder="Pilih tipe ujian" />
-                  </SelectTrigger>
+                <Controller
+                  control={control}
+                  name="typeUjian"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger
+                        id="exam-type"
+                        className="h-12 rounded-xl w-full border-slate-200 bg-slate-50 px-4 shadow-none"
+                      >
+                        <SelectValue placeholder="Pilih tipe ujian" />
+                      </SelectTrigger>
 
-                  <SelectContent className="rounded-xl bg-white">
-                    <SelectItem value="pg">Pilihan Ganda</SelectItem>
-
-                    <SelectItem value="essay">Essay</SelectItem>
-                  </SelectContent>
-                </Select>
+                      <SelectContent className="rounded-xl bg-white">
+                        <SelectItem value="pg">Pilihan Ganda</SelectItem>
+                        <SelectItem value="essay">Essay</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.typeUjian && (
+                  <p className="text-red-500 text-xs mt-0.5">
+                    {errors.typeUjian?.message}
+                  </p>
+                )}
               </div>
 
               {/* Exam Name */}
@@ -399,44 +363,55 @@ export default function CreateNewQuestions() {
                   Nama Ujian
                 </label>
 
-                <Select onValueChange={(val) => setSelectedValueNameExam(val)}>
-                  <SelectTrigger
-                    id="exam-name"
-                    className="h-12 rounded-xl w-full border-slate-200 bg-slate-50 px-4 shadow-none"
-                  >
-                    <SelectValue placeholder="Pilih nama ujian" />
-                  </SelectTrigger>
+                <Controller
+                  control={control}
+                  name="namaUjian"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger
+                        id="exam-name"
+                        className="h-12 rounded-xl w-full border-slate-200 bg-slate-50 px-4 shadow-none"
+                      >
+                        <SelectValue placeholder="Pilih nama ujian" />
+                      </SelectTrigger>
 
-                  <SelectContent className="rounded-xl bg-white p-1">
-                    <SelectItem
-                      value="buatUjianBaru"
-                      className="rounded-lg bg-blue-50 font-semibold text-blue-600"
-                    >
-                      + Buat Ujian Baru
-                    </SelectItem>
+                      <SelectContent className="rounded-xl bg-white p-1">
+                        <SelectItem
+                          value="buatUjianBaru"
+                          className="rounded-lg bg-blue-50 font-semibold text-blue-600"
+                        >
+                          + Buat Ujian Baru
+                        </SelectItem>
 
-                    {dataNameExam.map((nameExam: any, i: number) => {
-                      const isCorrectType =
-                        nameExam.tipeUjian === chooseTypeExams;
+                        {dataNameExam.map((nameExam: any, i: number) => {
+                          const isCorrectType =
+                            nameExam.tipeUjian === isTypeExam;
 
-                      return (
-                        isCorrectType && (
-                          <SelectItem
-                            key={i}
-                            value={nameExam.nama_ujian || "Nama ujian"}
-                          >
-                            {nameExam.nama_ujian || "Nama Ujian"}
-                          </SelectItem>
-                        )
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+                          return (
+                            isCorrectType && (
+                              <SelectItem
+                                key={i}
+                                value={nameExam.nama_ujian || "Nama ujian"}
+                              >
+                                {nameExam.nama_ujian || "Nama Ujian"}
+                              </SelectItem>
+                            )
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.namaUjian && (
+                  <p className="text-red-500 text-xs mt-0.5">
+                    {errors.namaUjian?.message}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* New Exam Name */}
-            {selectedValueNameExam === "buatUjianBaru" && (
+            {isNewNameExam === "buatUjianBaru" && (
               <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
                 <label
                   htmlFor="nama_ujian"
@@ -447,14 +422,15 @@ export default function CreateNewQuestions() {
 
                 <Input
                   id="nama_ujian"
+                  {...register("namaUjianBaru")}
                   className="h-12 rounded-xl border-slate-200 bg-white"
                   placeholder="Contoh: Ujian Matematika Semester 1"
-                  onChange={(e) => {
-                    handleValueInput(e);
-                    setNameExams(e.currentTarget.value);
-                  }}
-                  value={nameExam}
                 />
+                {errors.namaUjianBaru && (
+                  <p className="text-red-500 text-xs mt-0.5">
+                    {errors.namaUjianBaru?.message}
+                  </p>
+                )}
               </div>
             )}
           </section>
@@ -479,19 +455,20 @@ export default function CreateNewQuestions() {
 
               <Textarea
                 id="questions"
+                {...register("pertanyaan")}
                 placeholder="Tulis pertanyaan ujian di sini..."
                 className="min-h-32 resize-y rounded-xl border-slate-200 bg-white p-4 text-sm leading-6"
-                onChange={(e) => {
-                  handleValueInput(e);
-                  setQuestion(e.currentTarget.value);
-                }}
-                value={question}
               />
+              {errors.pertanyaan && (
+                <p className="text-red-500 text-xs mt-0.5">
+                  {errors.pertanyaan?.message}
+                </p>
+              )}
             </div>
           </section>
 
           {/* ================= MULTIPLE CHOICE ================= */}
-          {chooseTypeExams === "pg" && (
+          {isTypeExam === "pg" && (
             <section className="border-t border-slate-100 pt-8">
               <div className="mb-4">
                 <h3 className="text-lg font-bold text-slate-900">
@@ -506,6 +483,12 @@ export default function CreateNewQuestions() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {["a", "b", "c", "d", "e"].map((option: string) => {
                   const answerKey = `answer_${option}`;
+                  const optionField = `opsi${option.toUpperCase()}` as
+                    | "opsiA"
+                    | "opsiB"
+                    | "opsiC"
+                    | "opsiD"
+                    | "opsiE";
 
                   return (
                     <div
@@ -525,14 +508,15 @@ export default function CreateNewQuestions() {
                       <Input
                         id={answerKey}
                         type="text"
+                        {...register(optionField)}
                         placeholder={`Masukkan opsi ${option.toUpperCase()}`}
                         className="h-11 rounded-xl border-slate-200"
-                        value={answer[answerKey]}
-                        onChange={(e) => {
-                          handleValueInput(e);
-                          handleAddAnswer(e);
-                        }}
                       />
+                      {errors[optionField] && (
+                        <p className="text-red-500 text-xs mt-0.5">
+                          {errors[optionField]?.message}
+                        </p>
+                      )}
                     </div>
                   );
                 })}
@@ -547,26 +531,41 @@ export default function CreateNewQuestions() {
                   Jawaban yang Benar
                 </label>
 
-                <Select onValueChange={(val) => setSelectCorrectAnswer(val)}>
-                  <SelectTrigger
-                    id="correct-answer"
-                    className="h-12 w-full rounded-xl border-slate-200 bg-white sm:w-1/2"
-                  >
-                    <SelectValue placeholder="Pilih jawaban yang benar" />
-                  </SelectTrigger>
+                <Controller
+                  control={control}
+                  name="jawabanYangBenar"
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger
+                        id="correct-answer"
+                        className="h-12 w-full rounded-xl border-slate-200 bg-white sm:w-1/2"
+                      >
+                        <SelectValue placeholder="Pilih jawaban yang benar" />
+                      </SelectTrigger>
 
-                  <SelectContent className="rounded-xl bg-white">
-                    {["a", "b", "c", "d", "e"].map((option: string) => {
-                      const answerKey = `answer_${option}`;
+                      <SelectContent className="rounded-xl bg-white">
+                        {["a", "b", "c", "d", "e"].map((option: string) => {
+                          const answerKey = `answer_${option}`;
 
-                      return (
-                        <SelectItem key={option} value={option}>
-                          {answer[answerKey] || `Opsi ${option.toUpperCase()}`}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
+                          return (
+                            <SelectItem key={option} value={option}>
+                              <span className="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-xs font-bold uppercase text-blue-600">
+                                {option}
+                              </span>
+                              {answer[answerKey] ||
+                                `Opsi ${option.toUpperCase()}`}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.jawabanYangBenar && (
+                  <p className="text-red-500 text-xs mt-0.5">
+                    {errors.jawabanYangBenar?.message}
+                  </p>
+                )}
               </div>
             </section>
           )}
@@ -577,11 +576,11 @@ export default function CreateNewQuestions() {
               Pastikan seluruh informasi soal sudah benar sebelum disimpan.
             </p>
 
-            <Dialog>
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
               <DialogTrigger asChild>
                 <Button
                   type="button"
-                  disabled={!isFormFilled()}
+                  // disabled={!isFormFilled()}
                   className="w-full rounded-xl bg-blue-600 px-7 py-3 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                 >
                   Buat Soal
@@ -608,12 +607,14 @@ export default function CreateNewQuestions() {
                     </p>
 
                     <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
-                      {question}
+                      {isNewNameExam === "buatUjianBaru"
+                        ? isNewNameExam
+                        : selectedValueNameExam}
                     </p>
                   </div>
 
                   {/* Multiple Choice Preview */}
-                  {chooseTypeExams === "pg" && (
+                  {isTypeExam === "pg" && (
                     <>
                       <div className="space-y-2">
                         {["a", "b", "c", "d", "e"].map((option) => {
@@ -650,7 +651,7 @@ export default function CreateNewQuestions() {
                   )}
 
                   {/* Essay Preview */}
-                  {chooseTypeExams === "essay" && (
+                  {isTypeExam === "essay" && (
                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                       <p className="text-xs font-bold uppercase tracking-wider text-blue-600">
                         Tipe Jawaban
@@ -670,15 +671,14 @@ export default function CreateNewQuestions() {
                     </Button>
                   </DialogClose>
 
-                  <DialogClose asChild>
-                    <Button
-                      variant="default"
-                      onClick={handleCreateAddQuestion}
-                      className="rounded-xl bg-blue-600 hover:bg-blue-700"
-                    >
-                      Simpan Soal
-                    </Button>
-                  </DialogClose>
+                  <Button
+                    type="submit"
+                    form="create-exam-form"
+                    variant="default"
+                    className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                  >
+                    Simpan Soal
+                  </Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>

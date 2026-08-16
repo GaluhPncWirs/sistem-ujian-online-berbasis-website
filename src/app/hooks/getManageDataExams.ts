@@ -21,7 +21,7 @@ export function useManageDataExams(getidTeacher: string) {
         supabase
           .from("managed_exams")
           .select(
-            "nama_ujian, kelas, dibuat_tgl, tenggat_waktu, idExams, exams (nama_ujian)",
+            "kelas, dibuat_tgl, tenggat_waktu, idExams, exams (nama_ujian)",
           )
           .eq("id_Teacher", getidTeacher),
 
@@ -35,13 +35,34 @@ export function useManageDataExams(getidTeacher: string) {
         supabase.from("account-student").select("classes, idStudent"),
       ]);
 
-      if (managedExamsError || historyExamsError || studentsError) {
-        console.error("Gagal mengambil data manage exams:", {
-          managedExamsError,
-          historyExamsError,
-          studentsError,
+      if (managedExamsError) {
+        console.error("managedExams ERROR:", {
+          message: managedExamsError.message,
+          details: managedExamsError.details,
+          hint: managedExamsError.hint,
+          code: managedExamsError.code,
         });
+      }
 
+      if (historyExamsError) {
+        console.error("historyExams ERROR:", {
+          message: historyExamsError.message,
+          details: historyExamsError.details,
+          hint: historyExamsError.hint,
+          code: historyExamsError.code,
+        });
+      }
+
+      if (studentsError) {
+        console.error("students ERROR:", {
+          message: studentsError.message,
+          details: studentsError.details,
+          hint: studentsError.hint,
+          code: studentsError.code,
+        });
+      }
+
+      if (managedExamsError || historyExamsError || studentsError) {
         return;
       }
 
