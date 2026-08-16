@@ -37,6 +37,7 @@
         "memperbaiki type error pada fungsi hooks getUpComingExam()",
         "selesai memperbaiki bug pada saat ingin ke halaman ujian",
         "memperbaiki desain ui dan responsive pada halaman ujian",
-        "refaktor code bagian fetch api ambil data ujian"
+        "refaktor code bagian fetch api ambil data ujian",
+        "sedang refaktor code agar lebih efisien dan clean"
     ]
 }

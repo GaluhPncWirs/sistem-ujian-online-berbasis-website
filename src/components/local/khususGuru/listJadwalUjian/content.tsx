@@ -9,7 +9,14 @@ import {
 import { ClipboardCheck } from "lucide-react";
 
 type PropsListJadwalUjian = {
-  manageDataExams: any;
+  manageDataExams: {
+    lengthStudent: string[];
+    lengthStudentCompleteExams: string[];
+    nama_ujian: string;
+    kelas: string;
+    dibuat_tgl: string;
+    tenggat_waktu: string;
+  }[];
 };
 
 export default function ListJadwalUjian({

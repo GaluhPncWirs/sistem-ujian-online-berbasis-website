@@ -35,28 +35,12 @@ export function useResultExamDataStudent(idTeacher: string | null) {
         { data: students, error: studentsError },
         { data: historyStudents, error: historyStudentsError },
       ] = await Promise.all([
-        supabase.from("account-student").select(`
-            fullName,
-            classes,
-            idStudent
-          `),
+        supabase.from("account-student").select(`fullName, classes, idStudent`),
 
         supabase
           .from("history-exam-student")
           .select(
-            `
-            exam_id,
-            student_id,
-            hasil_ujian,
-            status_exam,
-            created_at,
-            exams!inner (
-              id,
-              nama_ujian,
-              tipeUjian,
-              idTeacher
-            )
-          `,
+            `exam_id, student_id, hasil_ujian, status_exam, created_at, exams!inner (id, nama_ujian, tipeUjian, idTeacher)`,
           )
           .eq("exams.idTeacher", idTeacher),
       ]);

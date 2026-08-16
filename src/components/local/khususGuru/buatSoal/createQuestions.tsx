@@ -25,10 +25,59 @@ import { useManageExamsData } from "@/app/hooks/getDataManageExams";
 import { Textarea } from "@/components/ui/textarea";
 import { useHandleInput } from "@/app/hooks/getHandleInput";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+const createExamSchema = z.object({
+  typeUjian: z.string().min(1, "Pilih salah satu"),
+  namaUjian: z.string().min(1, "Pilih salah satu"),
+  namaUjianBaru: z.string().min(5, "Minimal 5 karakter"),
+  pertanyaan: z.string().min(5, "Minimal 5 karakter"),
+
+  // pilihan ganda
+  opsiA: z.string().min(3, "Minimal 3 karakter"),
+  opsiB: z.string().min(3, "Minimal 3 karakter"),
+  opsiC: z.string().min(3, "Minimal 3 karakter"),
+  opsiD: z.string().min(3, "Minimal 3 karakter"),
+  opsiE: z.string().min(3, "Minimal 3 karakter"),
+  jawabanYangBenar: z.string().min(1, "Pilih salah satu"),
+});
+
+type CreateExamSchemaType = z.infer<typeof createExamSchema>;
 
 export default function CreateNewQuestions() {
+  const {
+    control,
+    register,
+    watch,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateExamSchemaType>({
+    resolver: zodResolver(createExamSchema),
+    defaultValues: {
+      typeUjian: "",
+      namaUjian: "",
+      namaUjianBaru: "",
+      pertanyaan: "",
+
+      // pilihan ganda
+      opsiA: "",
+      opsiB: "",
+      opsiC: "",
+      opsiD: "",
+      opsiE: "",
+      jawabanYangBenar: "",
+    },
+  });
+
+  async function onSubmit(data: CreateExamSchemaType) {
+    console.log(data);
+  }
+
   const idTeacher = useGetIdUsers((state) => state.idUser);
-  const [answer, setAnswer] = useState<any>({
+
+  const [answer, setAnswer] = useState<Record<string, string>>({
     answer_a: "",
     answer_b: "",
     answer_c: "",
@@ -302,7 +351,7 @@ export default function CreateNewQuestions() {
       </div>
 
       <div className="p-5 sm:p-7">
-        <form className="space-y-8">
+        <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
           {/* ================= EXAM SETTINGS ================= */}
           <section>
             <div className="mb-4">

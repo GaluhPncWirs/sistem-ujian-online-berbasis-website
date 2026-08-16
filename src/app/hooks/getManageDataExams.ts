@@ -21,28 +21,14 @@ export function useManageDataExams(getidTeacher: string) {
         supabase
           .from("managed_exams")
           .select(
-            `
-            *,
-            exams (
-              nama_ujian
-            )
-          `,
+            "nama_ujian, kelas, dibuat_tgl, tenggat_waktu, idExams, exams (nama_ujian)",
           )
           .eq("id_Teacher", getidTeacher),
 
         supabase
           .from("history-exam-student")
           .select(
-            `
-            exam_id,
-            student_id,
-            kelas,
-            hasil_ujian,
-            status_exam,
-            exams!inner (
-              idTeacher
-            )
-          `,
+            `exam_id, student_id, kelas, hasil_ujian, status_exam, exams!inner (idTeacher)`,
           )
           .eq("exams.idTeacher", getidTeacher),
 
