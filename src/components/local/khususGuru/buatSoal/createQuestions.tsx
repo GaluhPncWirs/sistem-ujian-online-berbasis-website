@@ -32,42 +32,94 @@ import { Controller, useForm } from "react-hook-form";
 const createExamSchema = z
   .object({
     typeUjian: z.string().min(1, "Pilih salah satu"),
+
     namaUjian: z.string().min(1, "Pilih salah satu"),
-    namaUjianBaru: z.string().min(5, "Minimal 5 karakter"),
+
+    namaUjianBaru: z
+      .string()
+      .min(5, "Minimal 5 karakter")
+      .optional()
+      .or(z.literal("")),
+
     pertanyaan: z.string().min(5, "Minimal 5 karakter"),
 
-    // pilihan ganda
-    opsiA: z.string().min(3, "Minimal 3 karakter"),
-    opsiB: z.string().min(3, "Minimal 3 karakter"),
-    opsiC: z.string().min(3, "Minimal 3 karakter"),
-    opsiD: z.string().min(3, "Minimal 3 karakter"),
-    opsiE: z.string().min(3, "Minimal 3 karakter"),
-    jawabanYangBenar: z.string().min(1, "Pilih salah satu"),
+    pilihanGanda: z
+      .object({
+        opsiA: z.string(),
+        opsiB: z.string(),
+        opsiC: z.string(),
+        opsiD: z.string(),
+        opsiE: z.string(),
+      })
+      .optional(),
+
+    jawabanYangBenar: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.namaUjian === "buatUjianBaru" && !data.namaUjianBaru) {
+    // ==========================================
+    // Nama ujian baru
+    // ==========================================
+
+    if (
+      data.namaUjian === "buatUjianBaru" &&
+      (!data.namaUjianBaru || data.namaUjianBaru.trim() === "")
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
+        path: ["namaUjianBaru"],
         message: "Nama ujian baru harus diisi",
       });
     }
 
+    // ==========================================
+    // Pertanyaan
+    // ==========================================
+
+    if (!data.pertanyaan || data.pertanyaan.trim() === "") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["pertanyaan"],
+        message: "Pertanyaan harus diisi",
+      });
+    }
+
+    // ==========================================
+    // Pilihan Ganda
+    // ==========================================
+
     if (data.typeUjian === "pg") {
-      if (
-        !data.opsiA ||
-        !data.opsiB ||
-        !data.opsiC ||
-        !data.opsiD ||
-        !data.opsiE
-      ) {
+      const pilihan = data.pilihanGanda;
+
+      if (!pilihan) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
+          path: ["pilihanGanda"],
           message: "Semua opsi jawaban harus diisi",
         });
+      } else {
+        const opsi = [
+          ["opsiA", pilihan.opsiA],
+          ["opsiB", pilihan.opsiB],
+          ["opsiC", pilihan.opsiC],
+          ["opsiD", pilihan.opsiD],
+          ["opsiE", pilihan.opsiE],
+        ] as const;
+
+        opsi.forEach(([field, value]) => {
+          if (!value || value.trim().length < 3) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["pilihanGanda", field],
+              message: "Minimal 3 karakter",
+            });
+          }
+        });
       }
-      if (!data.jawabanYangBenar) {
+
+      if (!data.jawabanYangBenar || data.jawabanYangBenar.trim() === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
+          path: ["jawabanYangBenar"],
           message: "Pilih jawaban yang benar",
         });
       }
@@ -75,6 +127,9 @@ const createExamSchema = z
   });
 
 type CreateExamSchemaType = z.infer<typeof createExamSchema>;
+
+const examOptions = ["a", "b", "c", "d", "e"] as const;
+type ExamOption = (typeof examOptions)[number];
 
 export default function CreateNewQuestions() {
   const idTeacher = useGetIdUsers((state) => state.idUser);
@@ -85,7 +140,7 @@ export default function CreateNewQuestions() {
     register,
     watch,
     handleSubmit,
-    formState: { errors, isSubmitting, isSubmitted },
+    formState: { errors, isSubmitting },
   } = useForm<CreateExamSchemaType>({
     resolver: zodResolver(createExamSchema),
     defaultValues: {
@@ -95,11 +150,13 @@ export default function CreateNewQuestions() {
       pertanyaan: "",
 
       // pilihan ganda
-      opsiA: "",
-      opsiB: "",
-      opsiC: "",
-      opsiD: "",
-      opsiE: "",
+      pilihanGanda: {
+        opsiA: "",
+        opsiB: "",
+        opsiC: "",
+        opsiD: "",
+        opsiE: "",
+      },
       jawabanYangBenar: "",
     },
   });
@@ -107,178 +164,184 @@ export default function CreateNewQuestions() {
   const isNewNameExam = watch("namaUjian");
   const isTypeExam = watch("typeUjian");
   const selectedValueNameExam = watch("namaUjian");
+
   const answer: Record<
     "answer_a" | "answer_b" | "answer_c" | "answer_d" | "answer_e",
     string
   > = {
-    answer_a: watch("opsiA"),
-    answer_b: watch("opsiB"),
-    answer_c: watch("opsiC"),
-    answer_d: watch("opsiD"),
-    answer_e: watch("opsiE"),
+    answer_a: watch("pilihanGanda.opsiA") ?? "",
+    answer_b: watch("pilihanGanda.opsiB") ?? "",
+    answer_c: watch("pilihanGanda.opsiC") ?? "",
+    answer_d: watch("pilihanGanda.opsiD") ?? "",
+    answer_e: watch("pilihanGanda.opsiE") ?? "",
   };
   const selectCorrectAnswer = watch("jawabanYangBenar");
 
-  async function onSubmit(data: CreateExamSchemaType) {
-    console.log(data);
-    setOpenDialog(false);
+  async function onSubmit(dataNewExam: CreateExamSchemaType) {
+    const isNewExam = selectedValueNameExam === "buatUjianBaru";
+    const isMultipleChoice = isTypeExam === "pg";
+
+    try {
+      // =========================================================
+      // 1. Jika membuat ujian baru, cek nama ujian terlebih dahulu
+      // =========================================================
+
+      if (isNewExam) {
+        const { data: existingExam, error: checkError } = await supabase
+          .from("exams")
+          .select("id")
+          .eq("nama_ujian", dataNewExam.namaUjianBaru)
+          .eq("idTeacher", idTeacher)
+          .maybeSingle();
+
+        if (checkError) {
+          console.error("Check exam error:", checkError);
+
+          toast("Gagal ❌", {
+            description: "Gagal memeriksa nama ujian.",
+          });
+
+          return;
+        }
+
+        if (existingExam) {
+          toast("Gagal ❌", {
+            description: "Nama ujian tersebut sudah pernah dibuat.",
+          });
+
+          return;
+        }
+
+        // =======================================================
+        // 2. Buat question pertama
+        // =======================================================
+
+        const question = isMultipleChoice
+          ? {
+              id: useRandomId(7, "EX"),
+              questions: dataNewExam.pertanyaan,
+              answerPg: dataNewExam.pilihanGanda,
+              correctAnswer: dataNewExam.jawabanYangBenar,
+            }
+          : {
+              id: useRandomId(7, "EX"),
+              questions: dataNewExam.pertanyaan,
+            };
+
+        const { error: insertError } = await supabase.from("exams").insert({
+          created_at_exams: new Date().toISOString(),
+          nama_ujian: dataNewExam.namaUjianBaru,
+          questions_exam: [question],
+          idTeacher,
+          tipeUjian: dataNewExam.typeUjian,
+        });
+
+        if (insertError) {
+          console.error("Insert exam error:", insertError);
+
+          toast("Gagal ❌", {
+            description: "Ujian gagal ditambahkan. Periksa kembali data ujian.",
+          });
+
+          return;
+        }
+
+        toast("Berhasil ✅", {
+          description: isMultipleChoice
+            ? "Soal pilihan ganda berhasil ditambahkan."
+            : "Soal essay berhasil ditambahkan.",
+        });
+
+        setOpenDialog(false);
+        return;
+      }
+
+      // =========================================================
+      // 3. Tambahkan soal ke ujian yang sudah ada
+      // =========================================================
+
+      const { data: exam, error: examError } = await supabase
+        .from("exams")
+        .select("id, questions_exam, idTeacher")
+        .eq("nama_ujian", selectedValueNameExam)
+        .eq("idTeacher", idTeacher)
+        .maybeSingle();
+
+      if (examError) {
+        console.error("Get exam error:", examError);
+
+        toast("Gagal ❌", {
+          description: "Gagal mengambil data ujian.",
+        });
+
+        return;
+      }
+
+      if (!exam) {
+        toast("Gagal ❌", {
+          description: "Ujian tidak ditemukan.",
+        });
+
+        return;
+      }
+
+      // =========================================================
+      // 4. Buat question baru
+      // =========================================================
+
+      const newQuestion = isMultipleChoice
+        ? {
+            id: useRandomId(7, "EX"),
+            questions: dataNewExam.pertanyaan,
+            answerPg: dataNewExam.pilihanGanda,
+            correctAnswer: dataNewExam.jawabanYangBenar,
+          }
+        : {
+            id: useRandomId(7, "EX"),
+            questions: dataNewExam.pertanyaan,
+          };
+
+      const currentQuestions = Array.isArray(exam.questions_exam)
+        ? exam.questions_exam
+        : [];
+
+      const updatedQuestions = [...currentQuestions, newQuestion];
+
+      // =========================================================
+      // 5. Update questions
+      // =========================================================
+
+      const { error: updateError } = await supabase
+        .from("exams")
+        .update({
+          questions_exam: updatedQuestions,
+        })
+        .eq("id", exam.id)
+        .eq("idTeacher", idTeacher);
+
+      if (updateError) {
+        console.error("Update exam error:", updateError);
+
+        toast("Gagal ❌", {
+          description: "Soal gagal ditambahkan. Periksa kembali data soal.",
+        });
+
+        return;
+      }
+
+      toast("Berhasil ✅", {
+        description: "Soal berhasil ditambahkan.",
+      });
+
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Unexpected error:", error);
+
+      toast("Gagal ❌", {
+        description: "Terjadi kesalahan. Silakan coba lagi.",
+      });
+    }
   }
-
-  // async function handleCreateAddQuestion() {
-  //   if (!chooseTypeExams || !selectedValueNameExam) {
-  //     toast("Gagal ❌", {
-  //       description: "Pilih Terlebih Dahulu Tipe Dan Nama Ujiannya",
-  //     });
-  //   } else {
-  //     const { data, error }: any = await supabase
-  //       .from("exams")
-  //       .select("nama_ujian")
-  //       .eq("nama_ujian", nameExam);
-
-  //     if (data?.length > 0) {
-  //       toast("Gagal ❌", {
-  //         description: "Soalnya Sama Seperti Yang Sebelumnya Telah Dibuat",
-  //       });
-  //     } else if (error) {
-  //       toast("Gagal ❌", {
-  //         description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
-  //       });
-  //     } else {
-  //       if (chooseTypeExams === "pg") {
-  //         if (selectedValueNameExam === "buatUjianBaru") {
-  //           const { error }: any = await supabase.from("exams").insert([
-  //             {
-  //               created_at_exams: new Date().toISOString(),
-  //               nama_ujian: nameExam,
-  //               questions_exam: [
-  //                 {
-  //                   id: useRandomId(7, "EX"),
-  //                   questions: question,
-  //                   answerPg: answer,
-  //                   correctAnswer: selectCorrectAnswer,
-  //                 },
-  //               ],
-  //               idTeacher: idTeacher,
-  //               tipeUjian: chooseTypeExams,
-  //             },
-  //           ]);
-
-  //           if (error) {
-  //             toast("Gagal ❌", {
-  //               description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
-  //             });
-  //           } else {
-  //             toast("Berhasil ✅", {
-  //               description: "Soal Pilihan Ganda Berhasil Ditambahkan",
-  //             });
-  //             setClearInput(true);
-  //           }
-  //         } else {
-  //           const { data, error } = await supabase
-  //             .from("exams")
-  //             .select("questions_exam")
-  //             .eq("nama_ujian", selectedValueNameExam)
-  //             .single();
-
-  //           if (error) {
-  //             toast("Gagal ❌", {
-  //               description: "Ujian tidak ditemukan.",
-  //             });
-  //           } else {
-  //             const addQuestions = [
-  //               ...(data.questions_exam || []),
-  //               {
-  //                 id: useRandomId(7, "EX"),
-  //                 questions: question,
-  //                 answerPg: answer,
-  //                 correctAnswer: selectCorrectAnswer,
-  //               },
-  //             ];
-  //             const { error }: any = await supabase
-  //               .from("exams")
-  //               .update({ questions_exam: addQuestions })
-  //               .eq("nama_ujian", selectedValueNameExam);
-
-  //             if (error) {
-  //               toast("Gagal ❌", {
-  //                 description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
-  //               });
-  //             } else {
-  //               toast("Berhasil ✅", {
-  //                 description: "Soal Berhasil Ditambahkan",
-  //               });
-  //               setClearInput(true);
-  //             }
-  //           }
-  //         }
-  //       } else {
-  //         if (selectedValueNameExam === "buatUjianBaru") {
-  //           const { error: errorAddQuestionsExam } = await supabase
-  //             .from("exams")
-  //             .insert([
-  //               {
-  //                 created_at_exams: new Date().toISOString(),
-  //                 nama_ujian: nameExam,
-  //                 questions_exam: [
-  //                   {
-  //                     id: useRandomId(7, "EX"),
-  //                     questions: question,
-  //                   },
-  //                 ],
-  //                 idTeacher: idTeacher,
-  //                 tipeUjian: chooseTypeExams,
-  //               },
-  //             ]);
-  //           if (errorAddQuestionsExam) {
-  //             toast("Gagal ❌", {
-  //               description: "Soal Gagal Ditambahkan Periksa Kembali Soalnya",
-  //             });
-  //           } else {
-  //             toast("Berhasil ✅", {
-  //               description: "Soal Essay Berhasil Ditambahkan",
-  //             });
-  //             setClearInput(true);
-  //           }
-  //         } else {
-  //           const { data: dataEssay, error: errorDataEssay } = await supabase
-  //             .from("exams")
-  //             .select("questions_exam")
-  //             .eq("nama_ujian", selectedValueNameExam)
-  //             .single();
-
-  //           if (errorDataEssay) {
-  //             toast("Gagal ❌", {
-  //               description: "Ujian tidak ditemukan.",
-  //             });
-  //           } else {
-  //             const addEssay = [
-  //               ...(dataEssay.questions_exam || []),
-  //               {
-  //                 id: useRandomId(7, "EX"),
-  //                 questions: question,
-  //               },
-  //             ];
-  //             const { error: errorAddDataEssay } = await supabase
-  //               .from("exams")
-  //               .update({ questions_exam: addEssay })
-  //               .eq("nama_ujian", selectedValueNameExam);
-
-  //             if (errorAddDataEssay) {
-  //               toast("Gagal ❌", {
-  //                 description: "Soal Gagal Tambahkan Periksa Kembali Soalnya",
-  //               });
-  //             } else {
-  //               toast("Berhasil ✅", {
-  //                 description: "Soal Berhasil Ditambahkan",
-  //               });
-  //               setClearInput(true);
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -481,14 +544,23 @@ export default function CreateNewQuestions() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {["a", "b", "c", "d", "e"].map((option: string) => {
-                  const answerKey = `answer_${option}`;
-                  const optionField = `opsi${option.toUpperCase()}` as
+                {examOptions.map((option: ExamOption) => {
+                  const answerKey = `answer_${option}` as keyof typeof answer;
+                  const optionKey = `opsi${option.toUpperCase()}` as
                     | "opsiA"
                     | "opsiB"
                     | "opsiC"
                     | "opsiD"
                     | "opsiE";
+                  const optionField = `pilihanGanda.${optionKey}` as const;
+                  const optionError =
+                    errors.pilihanGanda?.[
+                      optionKey as keyof typeof errors.pilihanGanda
+                    ];
+                  const optionErrorMessage =
+                    typeof optionError === "object" && optionError !== null
+                      ? "message" in optionError && optionError.message
+                      : undefined;
 
                   return (
                     <div
@@ -512,9 +584,9 @@ export default function CreateNewQuestions() {
                         placeholder={`Masukkan opsi ${option.toUpperCase()}`}
                         className="h-11 rounded-xl border-slate-200"
                       />
-                      {errors[optionField] && (
+                      {optionErrorMessage && (
                         <p className="text-red-500 text-xs mt-0.5">
-                          {errors[optionField]?.message}
+                          {optionErrorMessage}
                         </p>
                       )}
                     </div>
@@ -544,8 +616,9 @@ export default function CreateNewQuestions() {
                       </SelectTrigger>
 
                       <SelectContent className="rounded-xl bg-white">
-                        {["a", "b", "c", "d", "e"].map((option: string) => {
-                          const answerKey = `answer_${option}`;
+                        {examOptions.map((option: ExamOption) => {
+                          const answerKey =
+                            `answer_${option}` as keyof typeof answer;
 
                           return (
                             <SelectItem key={option} value={option}>
@@ -571,7 +644,7 @@ export default function CreateNewQuestions() {
           )}
 
           {/* ================= ACTION ================= */}
-          <div className="flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 border-t border-slate-100 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs leading-5 text-slate-400">
               Pastikan seluruh informasi soal sudah benar sebelum disimpan.
             </p>
@@ -580,7 +653,6 @@ export default function CreateNewQuestions() {
               <DialogTrigger asChild>
                 <Button
                   type="button"
-                  // disabled={!isFormFilled()}
                   className="w-full rounded-xl bg-blue-600 px-7 py-3 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                 >
                   Buat Soal
@@ -617,8 +689,9 @@ export default function CreateNewQuestions() {
                   {isTypeExam === "pg" && (
                     <>
                       <div className="space-y-2">
-                        {["a", "b", "c", "d", "e"].map((option) => {
-                          const answerKey = `answer_${option}`;
+                        {examOptions.map((option) => {
+                          const answerKey =
+                            `answer_${option}` as keyof typeof answer;
 
                           return (
                             <div
