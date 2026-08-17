@@ -126,6 +126,7 @@ export default function ManageExamComponent() {
     useState<string>("");
   const [updateQuestion, setUpdateQuestion] = useState<string>("");
   const getidTeacher = useGetIdUsers((state) => state.idUser);
+  const [selectedQuestion, setSelectedQuestion] = useState<any | null>(null);
 
   useEffect(() => {
     if (!getidTeacher) return;
@@ -235,29 +236,37 @@ export default function ManageExamComponent() {
   }
 
   function getDataBeforeUpdate(isTypeExam: "pg" | "essay", dataQuestion: any) {
+    setSelectedQuestion(dataQuestion);
+
+    const baseData = {
+      id: dataQuestion.id ?? "",
+      pertanyaan: dataQuestion.questions ?? "",
+    };
+
     if (isTypeExam === "pg") {
       reset({
-        id,
-        pertanyaan: dataQuestion.question ?? "",
-        pilihanGanda: dataQuestion.answerPg
-          ? {
-              opsiA: dataQuestion.answerPg.opsiA ?? "",
-              opsiB: dataQuestion.answerPg.opsiB ?? "",
-              opsiC: dataQuestion.answerPg.opsiC ?? "",
-              opsiD: dataQuestion.answerPg.opsiD ?? "",
-              opsiE: dataQuestion.answerPg.opsiE ?? "",
-            }
-          : undefined,
-        jawabanYangBenar: dataQuestion.correctAnswer,
+        ...baseData,
+
+        pilihanGanda: {
+          opsiA: dataQuestion.answerPg?.answer_a ?? "",
+          opsiB: dataQuestion.answerPg?.answer_b ?? "",
+          opsiC: dataQuestion.answerPg?.answer_c ?? "",
+          opsiD: dataQuestion.answerPg?.answer_d ?? "",
+          opsiE: dataQuestion.answerPg?.answer_e ?? "",
+        },
+
+        jawabanYangBenar: dataQuestion.correctAnswer ?? "",
+      });
+    } else {
+      reset({
+        ...baseData,
+
+        pilihanGanda: undefined,
+        jawabanYangBenar: undefined,
       });
     }
 
-    if (isTypeExam === "essay") {
-      reset({
-        id,
-        pertanyaan: dataQuestion.question ?? "",
-      });
-    }
+    setOpenDialog(true);
   }
 
   return (
@@ -419,212 +428,18 @@ export default function ManageExamComponent() {
                         <TableCell>
                           <div className="flex flex-col gap-3">
                             {/* Edit */}
-                            <Dialog
-                              open={openDialog}
-                              onOpenChange={setOpenDialog}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() =>
+                                getDataBeforeUpdate(
+                                  viewQuestions.tipeUjian,
+                                  data,
+                                )
+                              }
                             >
-                              <DialogTrigger asChild>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  className="h-10 w-full rounded-xl bg-blue-50 text-sm font-semibold text-blue-600 shadow-none hover:bg-blue-100 hover:text-blue-700"
-                                  onClick={() => {
-                                    getDataBeforeUpdate(
-                                      viewQuestions.tipeUjian,
-                                      data,
-                                    );
-                                  }}
-                                >
-                                  <PenLine className="size-5" />
-                                </Button>
-                              </DialogTrigger>
-
-                              <form
-                                className="space-y-5"
-                                onSubmit={handleSubmit(onSubmit)}
-                                id="form-edit-question"
-                              >
-                                <DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto rounded-2xl sm:max-w-2xl">
-                                  <DialogHeader>
-                                    <DialogTitle className="text-xl font-bold">
-                                      Edit Soal
-                                    </DialogTitle>
-
-                                    <DialogDescription>
-                                      Perbarui pertanyaan dan jawaban soal
-                                      berikut.
-                                    </DialogDescription>
-                                  </DialogHeader>
-
-                                  {/* Question */}
-                                  <div className="space-y-5">
-                                    <div>
-                                      <label
-                                        htmlFor={`question-${data.id}`}
-                                        className="mb-2 block text-sm font-semibold text-slate-700"
-                                      >
-                                        Pertanyaan
-                                      </label>
-
-                                      <Textarea
-                                        id={`question-${data.id}`}
-                                        {...register("pertanyaan")}
-                                        className="h-24 rounded-xl border-slate-200"
-                                      />
-
-                                      {errors.pertanyaan && (
-                                        <p className="mt-1 text-xs text-red-500">
-                                          {errors.pertanyaan.message}
-                                        </p>
-                                      )}
-                                    </div>
-
-                                    {/* PG */}
-                                    {viewQuestions.tipeUjian === "pg" && (
-                                      <>
-                                        <div>
-                                          <h3 className="mb-3 text-sm font-semibold text-slate-700">
-                                            Pilihan Jawaban
-                                          </h3>
-
-                                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                            {(
-                                              ["a", "b", "c", "d", "e"] as const
-                                            ).map((option) => {
-                                              const answerKey =
-                                                `opsi${option.toUpperCase()}` as
-                                                  | "opsiA"
-                                                  | "opsiB"
-                                                  | "opsiC"
-                                                  | "opsiD"
-                                                  | "opsiE";
-
-                                              return (
-                                                <div key={option}>
-                                                  <label
-                                                    htmlFor={`${answerKey}-${data.id}`}
-                                                    className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500"
-                                                  >
-                                                    Opsi {option.toUpperCase()}
-                                                  </label>
-
-                                                  <Input
-                                                    id={`${answerKey}-${data.id}`}
-                                                    className="h-10 rounded-xl border-slate-200"
-                                                    {...register(
-                                                      `pilihanGanda.${answerKey}`,
-                                                    )}
-                                                  />
-
-                                                  {errors.pilihanGanda?.[
-                                                    answerKey
-                                                  ] && (
-                                                    <p className="mt-1 text-xs text-red-500">
-                                                      {
-                                                        errors.pilihanGanda[
-                                                          answerKey
-                                                        ]?.message
-                                                      }
-                                                    </p>
-                                                  )}
-                                                </div>
-                                              );
-                                            })}
-                                          </div>
-                                        </div>
-
-                                        <div>
-                                          <label className="mb-2 block text-sm font-semibold text-slate-700">
-                                            Jawaban Benar
-                                          </label>
-
-                                          <Controller
-                                            control={control}
-                                            name="jawabanYangBenar"
-                                            render={({ field, fieldState }) => (
-                                              <>
-                                                <Select
-                                                  value={field.value ?? ""}
-                                                  onValueChange={field.onChange}
-                                                >
-                                                  <SelectTrigger className="h-12 w-full rounded-xl border-slate-200 bg-slate-50 px-4 shadow-none">
-                                                    <SelectValue placeholder="Pilih jawaban yang benar" />
-                                                  </SelectTrigger>
-
-                                                  <SelectContent className="rounded-xl bg-white">
-                                                    {(
-                                                      [
-                                                        "a",
-                                                        "b",
-                                                        "c",
-                                                        "d",
-                                                        "e",
-                                                      ] as const
-                                                    ).map((option) => {
-                                                      const answerKey =
-                                                        `opsi${option.toUpperCase()}` as
-                                                          | "opsiA"
-                                                          | "opsiB"
-                                                          | "opsiC"
-                                                          | "opsiD"
-                                                          | "opsiE";
-
-                                                      const answerText =
-                                                        watch(
-                                                          `pilihanGanda.${answerKey}`,
-                                                        ) ?? "";
-
-                                                      if (!answerText)
-                                                        return null;
-
-                                                      return (
-                                                        <SelectItem
-                                                          key={option}
-                                                          value={option}
-                                                        >
-                                                          Opsi{" "}
-                                                          {option.toUpperCase()}{" "}
-                                                          — {answerText}
-                                                        </SelectItem>
-                                                      );
-                                                    })}
-                                                  </SelectContent>
-                                                </Select>
-
-                                                {fieldState.error && (
-                                                  <p className="mt-0.5 text-xs text-red-500">
-                                                    {fieldState.error.message}
-                                                  </p>
-                                                )}
-                                              </>
-                                            )}
-                                          />
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-
-                                  <DialogFooter className="mt-5 gap-2">
-                                    <DialogClose asChild>
-                                      <Button
-                                        variant="outline"
-                                        className="rounded-xl"
-                                      >
-                                        Batal
-                                      </Button>
-                                    </DialogClose>
-
-                                    <Button
-                                      type="submit"
-                                      form="form-edit-question"
-                                      className="rounded-xl bg-blue-600 hover:bg-blue-700"
-                                    >
-                                      Simpan Perubahan
-                                    </Button>
-                                  </DialogFooter>
-                                </DialogContent>
-                              </form>
-                            </Dialog>
+                              <PenLine className="size-5" />
+                            </Button>
 
                             {/* Delete */}
                             <Dialog>
@@ -703,6 +518,177 @@ export default function ManageExamComponent() {
                 </TableBody>
               </Table>
             </div>
+
+            {/* ================= MANAGE EXAM ================= */}
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+              <form
+                className="space-y-5"
+                onSubmit={handleSubmit(onSubmit)}
+                id="form-edit-question"
+              >
+                <DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto rounded-2xl sm:max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-bold">
+                      Edit Soal
+                    </DialogTitle>
+
+                    <DialogDescription>
+                      Perbarui pertanyaan dan jawaban soal berikut.
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  {/* Question */}
+                  <div className="space-y-5">
+                    <div>
+                      <label
+                        htmlFor={`question-${selectedQuestion?.id}`}
+                        className="mb-2 block text-sm font-semibold text-slate-700"
+                      >
+                        Pertanyaan
+                      </label>
+
+                      <Textarea
+                        id={`question-${selectedQuestion?.id}`}
+                        {...register("pertanyaan")}
+                        className="h-24 rounded-xl border-slate-200"
+                      />
+
+                      {errors.pertanyaan && (
+                        <p className="mt-1 text-xs text-red-500">
+                          {errors.pertanyaan.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* PG */}
+                    {viewQuestions.tipeUjian === "pg" && (
+                      <>
+                        <div>
+                          <h3 className="mb-3 text-sm font-semibold text-slate-700">
+                            Pilihan Jawaban
+                          </h3>
+
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            {(["a", "b", "c", "d", "e"] as const).map(
+                              (option) => {
+                                const answerKey =
+                                  `opsi${option.toUpperCase()}` as
+                                    | "opsiA"
+                                    | "opsiB"
+                                    | "opsiC"
+                                    | "opsiD"
+                                    | "opsiE";
+
+                                return (
+                                  <div key={option}>
+                                    <label
+                                      htmlFor={`${answerKey}-${selectedQuestion?.id}`}
+                                      className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500"
+                                    >
+                                      Opsi {option.toUpperCase()}
+                                    </label>
+
+                                    <Input
+                                      id={`${answerKey}-${selectedQuestion?.id}`}
+                                      className="h-10 rounded-xl border-slate-200"
+                                      {...register(`pilihanGanda.${answerKey}`)}
+                                    />
+
+                                    {errors.pilihanGanda?.[answerKey] && (
+                                      <p className="mt-1 text-xs text-red-500">
+                                        {
+                                          errors.pilihanGanda[answerKey]
+                                            ?.message
+                                        }
+                                      </p>
+                                    )}
+                                  </div>
+                                );
+                              },
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="mb-2 block text-sm font-semibold text-slate-700">
+                            Jawaban Benar
+                          </label>
+
+                          <Controller
+                            control={control}
+                            name="jawabanYangBenar"
+                            render={({ field, fieldState }) => (
+                              <>
+                                <Select
+                                  value={field.value ?? ""}
+                                  onValueChange={field.onChange}
+                                >
+                                  <SelectTrigger className="h-12 w-full rounded-xl border-slate-200 bg-slate-50 px-4 shadow-none">
+                                    <SelectValue placeholder="Pilih jawaban yang benar" />
+                                  </SelectTrigger>
+
+                                  <SelectContent className="rounded-xl bg-white">
+                                    {(["a", "b", "c", "d", "e"] as const).map(
+                                      (option) => {
+                                        const answerKey =
+                                          `opsi${option.toUpperCase()}` as
+                                            | "opsiA"
+                                            | "opsiB"
+                                            | "opsiC"
+                                            | "opsiD"
+                                            | "opsiE";
+
+                                        const answerText =
+                                          watch(`pilihanGanda.${answerKey}`) ??
+                                          "";
+
+                                        if (!answerText.trim()) return null;
+
+                                        return (
+                                          <SelectItem
+                                            key={option}
+                                            value={answerText}
+                                          >
+                                            Opsi {option.toUpperCase()} —{" "}
+                                            {answerText}
+                                          </SelectItem>
+                                        );
+                                      },
+                                    )}
+                                  </SelectContent>
+                                </Select>
+
+                                {fieldState.error && (
+                                  <p className="mt-0.5 text-xs text-red-500">
+                                    {fieldState.error.message}
+                                  </p>
+                                )}
+                              </>
+                            )}
+                          />
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  <DialogFooter className="mt-5 gap-2">
+                    <DialogClose asChild>
+                      <Button variant="outline" className="rounded-xl">
+                        Batal
+                      </Button>
+                    </DialogClose>
+
+                    <Button
+                      type="submit"
+                      form="form-edit-question"
+                      className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                    >
+                      Simpan Perubahan
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </form>
+            </Dialog>
 
             {/* Legend */}
             {viewQuestions.tipeUjian === "pg" && (
