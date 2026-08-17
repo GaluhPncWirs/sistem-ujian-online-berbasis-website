@@ -40,6 +40,7 @@
         "refaktor code bagian fetch api ambil data ujian",
         "sedang refaktor code agar lebih efisien dan clean",
         "menghapus gambar - gambar yang tidak digunakan",
-        "selesai mengerjakan untuk konfigurasi menggunakan zod dan RFH di halaman buat soal ujian"
+        "selesai mengerjakan untuk konfigurasi menggunakan zod dan RFH di halaman buat soal ujian",
+        "memperbaiki bug schema zod dan juga merefaktor code bagian simpan data ujian ke dalam database"
     ]
 }

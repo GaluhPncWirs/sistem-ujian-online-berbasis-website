@@ -34,13 +34,103 @@ import {
 } from "@/components/ui/table";
 import { supabase } from "@/lib/supabase/data";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
-import { AlertCircle, ChevronDownIcon, ClipboardList } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  AlertCircle,
+  ChevronDownIcon,
+  ClipboardList,
+  PenLine,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const questionSettingSchema = z.object({
+  idSoal: z.string().min(1),
+  dikirim: z.boolean(),
+  bobot: z.number().min(0, "Bobot tidak boleh kurang dari 0").optional(),
+});
+
+const sendExamToStudentSchema = z
+  .object({
+    kelas: z.string().min(1, "Pilih kelas"),
+
+    // jadwal ujian
+    tanggalUjian: z.date({
+      error: "Set tanggal ujian",
+    }),
+    mulai: z.string().min(1, "Tentukan waktu mulai"),
+    selesai: z.string().min(1, "Tentukan waktu selesai"),
+
+    // durasi ujian
+    durasi: z.string().min(1, "Pilih salah satu"),
+
+    pengaturanSoal: z.array(questionSettingSchema).default([]),
+  })
+  .superRefine((data, ctx) => {
+    // ==========================================
+    // Validasi waktu
+    // ==========================================
+    if (data.mulai && data.selesai) {
+      const [startHour, startMinute] = data.mulai.split(":").map(Number);
+      const [endHour, endMinute] = data.selesai.split(":").map(Number);
+
+      const startTotal = startHour * 60 + startMinute;
+      const endTotal = endHour * 60 + endMinute;
+
+      if (endTotal <= startTotal) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["selesai"],
+          message: "Waktu selesai harus lebih besar dari waktu mulai",
+        });
+      }
+    }
+
+    // ==========================================
+    // Minimal satu soal dikirim
+    // ==========================================
+
+    const soalDikirim = data.pengaturanSoal.filter((soal) => soal.dikirim);
+
+    if (soalDikirim.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["pengaturanSoal"],
+        message: "Pilih minimal satu soal untuk di kirim",
+      });
+    }
+  });
+type SendExamToStudentSchemaType = z.infer<typeof sendExamToStudentSchema>;
 
 export default function ViewQuestions() {
   const idTeacher = useGetIdUsers((state) => state.idUser);
+
+  const {
+    control,
+    register,
+    watch,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SendExamToStudentSchemaType>({
+    resolver: zodResolver(sendExamToStudentSchema),
+    defaultValues: {
+      kelas: "",
+      tanggalUjian: undefined,
+      mulai: "",
+      selesai: "",
+      durasi: "",
+      pengaturanSoal: [],
+    },
+  });
+
+  async function onSubmit(data: SendExamToStudentSchemaType) {
+    console.log(data);
+  }
+
   const [chooseClass, setChooseClass] = useState<string[]>([]);
   const [chooseTimeExam, setChooseTimeExam] = useState<string[]>([]);
   const [dates, setDates] = useState<(Date | undefined)[]>([]);
@@ -157,19 +247,19 @@ export default function ViewQuestions() {
                 Ujian
               </TableHead>
 
-              <TableHead className="min-w-[150px] font-semibold text-slate-600">
+              <TableHead className="min-w-[130px] font-semibold text-slate-600">
                 Kirim Ke
               </TableHead>
 
-              <TableHead className="min-w-[340px] font-semibold text-slate-600">
+              <TableHead className="min-w-[250px] font-semibold text-slate-600">
                 Jadwal Ujian
               </TableHead>
 
-              <TableHead className="min-w-[150px] font-semibold text-slate-600">
+              <TableHead className="min-w-[130px] font-semibold text-slate-600">
                 Durasi
               </TableHead>
 
-              <TableHead className="min-w-[170px] text-center font-semibold text-slate-600">
+              <TableHead className="min-w-[80px] text-center font-semibold text-slate-600">
                 Kelola
               </TableHead>
             </TableRow>
@@ -177,236 +267,250 @@ export default function ViewQuestions() {
 
           <TableBody>
             {viewManageQuestionsExam.length > 0 ? (
-              viewManageQuestionsExam.map((data: any, i: number) => (
-                <TableRow
-                  key={i}
-                  className="align-top transition-colors hover:bg-slate-50"
-                >
-                  {/* Number */}
-                  <TableCell className="pt-5 font-semibold text-slate-400">
-                    {String(i + 1).padStart(2, "0")}
-                  </TableCell>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                {viewManageQuestionsExam.map((data: any, i: number) => (
+                  <TableRow
+                    key={i}
+                    className="align-top transition-colors hover:bg-slate-50"
+                  >
+                    {/* Number */}
+                    <TableCell className="pt-5 font-semibold text-slate-400">
+                      {String(i + 1).padStart(2, "0")}
+                    </TableCell>
 
-                  {/* Exam */}
-                  <TableCell className="pt-5">
-                    <div>
-                      <p className="font-bold text-slate-900">
-                        {data.nama_ujian}
-                      </p>
-
-                      <span className="mt-1 inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-600">
-                        {data.tipeUjian === "pg" ? "Pilihan Ganda" : "Essay"}
-                      </span>
-                    </div>
-                  </TableCell>
-
-                  {/* Target Class */}
-                  <TableCell className="pt-5">
-                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Kelas
-                    </label>
-
-                    <Select
-                      onValueChange={(val) =>
-                        setChooseClass((prev: any) => {
-                          const updateClass = [...prev];
-                          updateClass[i] = val;
-                          return updateClass;
-                        })
-                      }
-                    >
-                      <SelectTrigger className="h-10 w-full rounded-xl border-slate-200 bg-white">
-                        <SelectValue placeholder="Pilih kelas" />
-                      </SelectTrigger>
-
-                      <SelectContent className="rounded-xl bg-white">
-                        <SelectItem value="1A">1A</SelectItem>
-                        <SelectItem value="2B">2B</SelectItem>
-                        <SelectItem value="3A">3A</SelectItem>
-                        <SelectItem value="4E">4E</SelectItem>
-                        <SelectItem value="5A">5A</SelectItem>
-                        <SelectItem value="2C">2C</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-
-                  {/* Schedule */}
-                  <TableCell className="pt-5">
-                    <div className="space-y-3">
-                      {/* Date */}
+                    {/* Exam */}
+                    <TableCell className="pt-5">
                       <div>
-                        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                          Tanggal
-                        </label>
+                        <p className="font-bold text-slate-900">
+                          {data.nama_ujian}
+                        </p>
 
-                        <Popover>
-                          <PopoverTrigger asChild>
+                        <span className="mt-1 inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-600">
+                          {data.tipeUjian === "pg" ? "Pilihan Ganda" : "Essay"}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    {/* Target Class */}
+                    <TableCell className="pt-5">
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                        Kelas
+                      </label>
+
+                      <Controller
+                        control={control}
+                        name="kelas"
+                        render={({ field }) => (
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger
+                              id="exam-type"
+                              className="h-12 rounded-xl w-full border-slate-200 bg-slate-50 px-4 shadow-none"
+                            >
+                              <SelectValue placeholder="Pilih tipe ujian" />
+                            </SelectTrigger>
+
+                            <SelectContent className="rounded-xl bg-white">
+                              <SelectItem value="1A">1A</SelectItem>
+                              <SelectItem value="2B">2B</SelectItem>
+                              <SelectItem value="3A">3A</SelectItem>
+                              <SelectItem value="4E">4E</SelectItem>
+                              <SelectItem value="5A">5A</SelectItem>
+                              <SelectItem value="2C">2C</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.kelas && (
+                        <p className="text-red-500 text-xs mt-0.5">
+                          {errors.kelas?.message}
+                        </p>
+                      )}
+                    </TableCell>
+
+                    {/* Schedule */}
+                    <TableCell className="pt-5">
+                      <div className="space-y-3">
+                        {/* Date */}
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Tanggal
+                          </label>
+
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className="h-10 w-full justify-between rounded-xl border-slate-200 font-medium text-slate-700"
+                              >
+                                {dates[i]
+                                  ? dates[i]?.toLocaleDateString("id-ID", {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    })
+                                  : "Pilih tanggal"}
+
+                                <ChevronDownIcon className="size-4 text-slate-400" />
+                              </Button>
+                            </PopoverTrigger>
+
+                            <PopoverContent className="w-auto overflow-hidden rounded-xl p-0">
+                              <Calendar
+                                mode="single"
+                                selected={dates[i]}
+                                captionLayout="dropdown"
+                                onSelect={(date) => {
+                                  const newDate = [...dates];
+                                  newDate[i] = date;
+                                  setDates(newDate);
+                                }}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        {/* Time */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                              Mulai
+                            </label>
+
+                            <Input
+                              type="time"
+                              value={fromTimes[i] || "00:00"}
+                              onChange={(e) => {
+                                const newTime = [...fromTimes];
+                                newTime[i] = e.currentTarget.value;
+                                setFromTimes(newTime);
+                              }}
+                              className="h-10 rounded-xl border-slate-200 px-3"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                              Selesai
+                            </label>
+
+                            <Input
+                              type="time"
+                              value={toTimes[i] || "00:00"}
+                              onChange={(e) => {
+                                const newTime = [...toTimes];
+                                newTime[i] = e.currentTarget.value;
+                                setToTimes(newTime);
+                              }}
+                              className="h-10 rounded-xl border-slate-200 px-3"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+
+                    {/* Duration */}
+                    <TableCell className="pt-5">
+                      <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                        Durasi
+                      </label>
+
+                      <Select
+                        onValueChange={(val) =>
+                          setChooseTimeExam((prev: any) => {
+                            const updateTime = [...prev];
+                            updateTime[i] = val;
+                            return updateTime;
+                          })
+                        }
+                      >
+                        <SelectTrigger className="h-10 w-full rounded-xl border-slate-200 bg-white">
+                          <SelectValue placeholder="Tentukan durasi" />
+                        </SelectTrigger>
+
+                        <SelectContent className="rounded-xl bg-white">
+                          <SelectItem value="600">10 Menit</SelectItem>
+                          <SelectItem value="900">15 Menit</SelectItem>
+                          <SelectItem value="1200">20 Menit</SelectItem>
+                          <SelectItem value="1500">25 Menit</SelectItem>
+                          <SelectItem value="1800">30 Menit</SelectItem>
+                          <SelectItem value="2400">40 Menit</SelectItem>
+                          <SelectItem value="2700">45 Menit</SelectItem>
+                          <SelectItem value="3000">50 Menit</SelectItem>
+                          <SelectItem value="3600">60 Menit</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+
+                    {/* Actions */}
+                    <TableCell className="pt-5">
+                      <div className="flex flex-col gap-2">
+                        <Link
+                          href={`/Teacher/dashboard/manageExams?id=${data.id}`}
+                          className="inline-flex h-10 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-100"
+                        >
+                          <PenLine className="size-5" />
+                        </Link>
+
+                        <Dialog>
+                          <DialogTrigger asChild>
                             <Button
                               type="button"
                               variant="outline"
-                              className="h-10 w-full justify-between rounded-xl border-slate-200 font-medium text-slate-700"
+                              className="h-10 rounded-xl border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 hover:text-red-700"
                             >
-                              {dates[i]
-                                ? dates[i]?.toLocaleDateString("id-ID", {
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "numeric",
-                                  })
-                                : "Pilih tanggal"}
-
-                              <ChevronDownIcon className="size-4 text-slate-400" />
+                              <Trash2 className="size-5" />
                             </Button>
-                          </PopoverTrigger>
+                          </DialogTrigger>
 
-                          <PopoverContent className="w-auto overflow-hidden rounded-xl p-0">
-                            <Calendar
-                              mode="single"
-                              selected={dates[i]}
-                              captionLayout="dropdown"
-                              onSelect={(date) => {
-                                const newDate = [...dates];
-                                newDate[i] = date;
-                                setDates(newDate);
-                              }}
-                            />
-                          </PopoverContent>
-                        </Popover>
+                          <DialogContent className="rounded-2xl sm:max-w-md">
+                            <DialogHeader>
+                              <DialogTitle className="text-xl font-bold">
+                                Hapus Soal Ujian
+                              </DialogTitle>
+
+                              <DialogDescription className="pt-2 leading-6">
+                                Apakah Anda yakin ingin menghapus ujian{" "}
+                                <span className="font-bold text-slate-900">
+                                  "{data.nama_ujian}"
+                                </span>
+                                ?
+                                <span className="mt-2 block">
+                                  Tindakan ini tidak dapat dibatalkan.
+                                </span>
+                              </DialogDescription>
+                            </DialogHeader>
+
+                            <DialogFooter className="mt-4 gap-2">
+                              <DialogClose asChild>
+                                <Button
+                                  variant="outline"
+                                  className="rounded-xl"
+                                >
+                                  Batal
+                                </Button>
+                              </DialogClose>
+
+                              <DialogClose asChild>
+                                <Button
+                                  variant="destructive"
+                                  className="rounded-xl bg-red-600 hover:bg-red-700"
+                                  onClick={() => handleDeleteExam(data.id)}
+                                >
+                                  Hapus Ujian
+                                </Button>
+                              </DialogClose>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       </div>
-
-                      {/* Time */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                            Mulai
-                          </label>
-
-                          <Input
-                            type="time"
-                            value={fromTimes[i] || "00:00"}
-                            onChange={(e) => {
-                              const newTime = [...fromTimes];
-                              newTime[i] = e.currentTarget.value;
-                              setFromTimes(newTime);
-                            }}
-                            className="h-10 rounded-xl border-slate-200 px-3"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                            Selesai
-                          </label>
-
-                          <Input
-                            type="time"
-                            value={toTimes[i] || "00:00"}
-                            onChange={(e) => {
-                              const newTime = [...toTimes];
-                              newTime[i] = e.currentTarget.value;
-                              setToTimes(newTime);
-                            }}
-                            className="h-10 rounded-xl border-slate-200 px-3"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-
-                  {/* Duration */}
-                  <TableCell className="pt-5">
-                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                      Durasi
-                    </label>
-
-                    <Select
-                      onValueChange={(val) =>
-                        setChooseTimeExam((prev: any) => {
-                          const updateTime = [...prev];
-                          updateTime[i] = val;
-                          return updateTime;
-                        })
-                      }
-                    >
-                      <SelectTrigger className="h-10 w-full rounded-xl border-slate-200 bg-white">
-                        <SelectValue placeholder="Tentukan durasi" />
-                      </SelectTrigger>
-
-                      <SelectContent className="rounded-xl bg-white">
-                        <SelectItem value="600">10 Menit</SelectItem>
-                        <SelectItem value="900">15 Menit</SelectItem>
-                        <SelectItem value="1200">20 Menit</SelectItem>
-                        <SelectItem value="1500">25 Menit</SelectItem>
-                        <SelectItem value="1800">30 Menit</SelectItem>
-                        <SelectItem value="2400">40 Menit</SelectItem>
-                        <SelectItem value="2700">45 Menit</SelectItem>
-                        <SelectItem value="3000">50 Menit</SelectItem>
-                        <SelectItem value="3600">60 Menit</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-
-                  {/* Actions */}
-                  <TableCell className="pt-5">
-                    <div className="flex flex-col gap-2">
-                      <Link
-                        href={`/Teacher/dashboard/manageExams?id=${data.id}`}
-                        className="inline-flex h-10 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-100"
-                      >
-                        Edit Soal
-                      </Link>
-
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="h-10 rounded-xl border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 hover:text-red-700"
-                          >
-                            Hapus
-                          </Button>
-                        </DialogTrigger>
-
-                        <DialogContent className="rounded-2xl sm:max-w-md">
-                          <DialogHeader>
-                            <DialogTitle className="text-xl font-bold">
-                              Hapus Soal Ujian
-                            </DialogTitle>
-
-                            <DialogDescription className="pt-2 leading-6">
-                              Apakah Anda yakin ingin menghapus ujian{" "}
-                              <span className="font-bold text-slate-900">
-                                "{data.nama_ujian}"
-                              </span>
-                              ?
-                              <span className="mt-2 block">
-                                Tindakan ini tidak dapat dibatalkan.
-                              </span>
-                            </DialogDescription>
-                          </DialogHeader>
-
-                          <DialogFooter className="mt-4 gap-2">
-                            <DialogClose asChild>
-                              <Button variant="outline" className="rounded-xl">
-                                Batal
-                              </Button>
-                            </DialogClose>
-
-                            <DialogClose asChild>
-                              <Button
-                                variant="destructive"
-                                className="rounded-xl bg-red-600 hover:bg-red-700"
-                                onClick={() => handleDeleteExam(data.id)}
-                              >
-                                Hapus Ujian
-                              </Button>
-                            </DialogClose>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </form>
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="h-40 text-center">
