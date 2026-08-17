@@ -23,7 +23,6 @@ import {
 import { useRandomId } from "@/app/hooks/getRandomId";
 import { useManageExamsData } from "@/app/hooks/getDataManageExams";
 import { Textarea } from "@/components/ui/textarea";
-import { useHandleInput } from "@/app/hooks/getHandleInput";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";

@@ -43,6 +43,7 @@
         "selesai mengerjakan untuk konfigurasi menggunakan zod dan RFH di halaman buat soal ujian",
         "memperbaiki bug schema zod dan juga merefaktor code bagian simpan data ujian ke dalam database",
         "menggunakan zod dan RFH di halaman kelola ujian ",
-        "selesai untuk refaktor code di halaman kelola ujian menggunakan zod dan RFH"
+        "selesai untuk refaktor code di halaman kelola ujian menggunakan zod dan RFH",
+        "memperbaiki desain ui di halaman kelola ujian"
     ]
 }

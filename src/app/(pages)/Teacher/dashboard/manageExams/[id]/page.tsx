@@ -33,11 +33,87 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import MainContent from "@/layout/mainContent/content";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, PenLine, Trash2 } from "lucide-react";
+import { z } from "zod";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Textarea } from "@/components/ui/textarea";
+
+const editExamQuestionSchema = z.object({
+  id: z.string().min(1),
+
+  pertanyaan: z.string().min(5, "Minimal 5 karakter"),
+
+  pilihanGanda: z
+    .object({
+      opsiA: z.string(),
+      opsiB: z.string(),
+      opsiC: z.string(),
+      opsiD: z.string(),
+      opsiE: z.string(),
+    })
+    .optional(),
+
+  jawabanYangBenar: z.enum(["a", "b", "c", "d", "e"]).optional(),
+});
+
+type EditExamQuestionSchemaType = z.infer<typeof editExamQuestionSchema>;
 
 export default function ManageExamComponent() {
   const params = useParams<{ id: string }>();
   const id = params.id;
+  const [openDialog, setOpenDialog] = useState(false);
+  const {
+    control,
+    register,
+    reset,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<EditExamQuestionSchemaType>({
+    resolver: zodResolver(editExamQuestionSchema),
+
+    defaultValues: {
+      id: "",
+      pertanyaan: "",
+      pilihanGanda: {
+        opsiA: "",
+        opsiB: "",
+        opsiC: "",
+        opsiD: "",
+        opsiE: "",
+      },
+      jawabanYangBenar: undefined,
+    },
+  });
+
+  async function onSubmit(formData: EditExamQuestionSchemaType) {
+    console.log(formData);
+
+    // const { error } = await supabase
+    //   .from("exams")
+    //   .update({
+    //     // sesuaikan dengan struktur JSON questions_exam
+    //   })
+    //   .eq("id", formData.id);
+
+    // if (error) {
+    //   console.error(error);
+
+    //   toast("Gagal ❌", {
+    //     description: "Soal gagal diperbarui.",
+    //   });
+
+    //   return;
+    // }
+
+    // toast("Berhasil ✅", {
+    //   description: "Soal berhasil diperbarui.",
+    // });
+
+    setOpenDialog(false);
+  }
+
   const [viewQuestions, setViewQuestions] = useState<any>({});
   const [newAnswer, setNewAnswer] = useState({
     answer_a: "",
@@ -158,12 +234,30 @@ export default function ManageExamComponent() {
     }));
   }
 
-  function getDataBeforeUpdate(questions: string, answers: object) {
-    setUpdateQuestion(questions);
-    setNewAnswer((prev) => ({
-      ...prev,
-      ...answers,
-    }));
+  function getDataBeforeUpdate(isTypeExam: "pg" | "essay", dataQuestion: any) {
+    if (isTypeExam === "pg") {
+      reset({
+        id,
+        pertanyaan: dataQuestion.question ?? "",
+        pilihanGanda: dataQuestion.answerPg
+          ? {
+              opsiA: dataQuestion.answerPg.opsiA ?? "",
+              opsiB: dataQuestion.answerPg.opsiB ?? "",
+              opsiC: dataQuestion.answerPg.opsiC ?? "",
+              opsiD: dataQuestion.answerPg.opsiD ?? "",
+              opsiE: dataQuestion.answerPg.opsiE ?? "",
+            }
+          : undefined,
+        jawabanYangBenar: dataQuestion.correctAnswer,
+      });
+    }
+
+    if (isTypeExam === "essay") {
+      reset({
+        id,
+        pertanyaan: dataQuestion.question ?? "",
+      });
+    }
   }
 
   return (
@@ -231,7 +325,7 @@ export default function ManageExamComponent() {
                       Soal Ujian
                     </TableHead>
 
-                    <TableHead className="min-w-[170px] text-center font-semibold text-slate-600">
+                    <TableHead className="min-w-[70px] text-center font-semibold text-slate-600">
                       Kelola
                     </TableHead>
                   </TableRow>
@@ -322,69 +416,88 @@ export default function ManageExamComponent() {
                         </TableCell>
 
                         {/* Actions */}
-                        <TableCell className="pt-5">
-                          <div className="flex flex-col gap-2">
+                        <TableCell>
+                          <div className="flex flex-col gap-3">
                             {/* Edit */}
-                            <Dialog>
+                            <Dialog
+                              open={openDialog}
+                              onOpenChange={setOpenDialog}
+                            >
                               <DialogTrigger asChild>
                                 <Button
                                   type="button"
+                                  variant="outline"
                                   className="h-10 w-full rounded-xl bg-blue-50 text-sm font-semibold text-blue-600 shadow-none hover:bg-blue-100 hover:text-blue-700"
                                   onClick={() => {
                                     getDataBeforeUpdate(
-                                      data.questions,
-                                      data.answerPg,
+                                      viewQuestions.tipeUjian,
+                                      data,
                                     );
                                   }}
                                 >
-                                  Edit Soal
+                                  <PenLine className="size-5" />
                                 </Button>
                               </DialogTrigger>
 
-                              <DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto rounded-2xl sm:max-w-2xl">
-                                <DialogHeader>
-                                  <DialogTitle className="text-xl font-bold">
-                                    Edit Soal
-                                  </DialogTitle>
+                              <form
+                                className="space-y-5"
+                                onSubmit={handleSubmit(onSubmit)}
+                                id="form-edit-question"
+                              >
+                                <DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto rounded-2xl sm:max-w-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle className="text-xl font-bold">
+                                      Edit Soal
+                                    </DialogTitle>
 
-                                  <DialogDescription>
-                                    Perbarui pertanyaan dan jawaban soal
-                                    berikut.
-                                  </DialogDescription>
-                                </DialogHeader>
+                                    <DialogDescription>
+                                      Perbarui pertanyaan dan jawaban soal
+                                      berikut.
+                                    </DialogDescription>
+                                  </DialogHeader>
 
-                                {/* Question */}
-                                <div className="space-y-5">
-                                  <div>
-                                    <label
-                                      htmlFor={`question-${data.id}`}
-                                      className="mb-2 block text-sm font-semibold text-slate-700"
-                                    >
-                                      Pertanyaan
-                                    </label>
+                                  {/* Question */}
+                                  <div className="space-y-5">
+                                    <div>
+                                      <label
+                                        htmlFor={`question-${data.id}`}
+                                        className="mb-2 block text-sm font-semibold text-slate-700"
+                                      >
+                                        Pertanyaan
+                                      </label>
 
-                                    <Input
-                                      id={`question-${data.id}`}
-                                      className="h-11 rounded-xl border-slate-200"
-                                      onChange={(e: any) =>
-                                        setUpdateQuestion(e.currentTarget.value)
-                                      }
-                                      defaultValue={updateQuestion}
-                                    />
-                                  </div>
+                                      <Textarea
+                                        id={`question-${data.id}`}
+                                        {...register("pertanyaan")}
+                                        className="h-24 rounded-xl border-slate-200"
+                                      />
 
-                                  {/* PG */}
-                                  {viewQuestions.tipeUjian === "pg" && (
-                                    <>
-                                      <div>
-                                        <h3 className="mb-3 text-sm font-semibold text-slate-700">
-                                          Pilihan Jawaban
-                                        </h3>
+                                      {errors.pertanyaan && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                          {errors.pertanyaan.message}
+                                        </p>
+                                      )}
+                                    </div>
 
-                                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                          {["a", "b", "c", "d", "e"].map(
-                                            (option) => {
-                                              const answerKey = `answer_${option}`;
+                                    {/* PG */}
+                                    {viewQuestions.tipeUjian === "pg" && (
+                                      <>
+                                        <div>
+                                          <h3 className="mb-3 text-sm font-semibold text-slate-700">
+                                            Pilihan Jawaban
+                                          </h3>
+
+                                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                                            {(
+                                              ["a", "b", "c", "d", "e"] as const
+                                            ).map((option) => {
+                                              const answerKey =
+                                                `opsi${option.toUpperCase()}` as
+                                                  | "opsiA"
+                                                  | "opsiB"
+                                                  | "opsiC"
+                                                  | "opsiD"
+                                                  | "opsiE";
 
                                               return (
                                                 <div key={option}>
@@ -398,84 +511,119 @@ export default function ManageExamComponent() {
                                                   <Input
                                                     id={`${answerKey}-${data.id}`}
                                                     className="h-10 rounded-xl border-slate-200"
-                                                    onChange={
-                                                      handleUpdateAnswer
-                                                    }
-                                                    defaultValue={
-                                                      newAnswer[answerKey]
-                                                    }
+                                                    {...register(
+                                                      `pilihanGanda.${answerKey}`,
+                                                    )}
                                                   />
+
+                                                  {errors.pilihanGanda?.[
+                                                    answerKey
+                                                  ] && (
+                                                    <p className="mt-1 text-xs text-red-500">
+                                                      {
+                                                        errors.pilihanGanda[
+                                                          answerKey
+                                                        ]?.message
+                                                      }
+                                                    </p>
+                                                  )}
                                                 </div>
                                               );
-                                            },
-                                          )}
+                                            })}
+                                          </div>
                                         </div>
-                                      </div>
 
-                                      <div>
-                                        <label className="mb-2 block text-sm font-semibold text-slate-700">
-                                          Jawaban Benar
-                                        </label>
+                                        <div>
+                                          <label className="mb-2 block text-sm font-semibold text-slate-700">
+                                            Jawaban Benar
+                                          </label>
 
-                                        <Select
-                                          onValueChange={(val) =>
-                                            setSelectCorrectNewAnswer(val)
-                                          }
-                                          defaultValue={data.correctAnswer}
-                                        >
-                                          <SelectTrigger className="h-11 w-full rounded-xl border-slate-200 sm:w-1/2">
-                                            <SelectValue placeholder="Pilih jawaban yang benar" />
-                                          </SelectTrigger>
+                                          <Controller
+                                            control={control}
+                                            name="jawabanYangBenar"
+                                            render={({ field, fieldState }) => (
+                                              <>
+                                                <Select
+                                                  value={field.value ?? ""}
+                                                  onValueChange={field.onChange}
+                                                >
+                                                  <SelectTrigger className="h-12 w-full rounded-xl border-slate-200 bg-slate-50 px-4 shadow-none">
+                                                    <SelectValue placeholder="Pilih jawaban yang benar" />
+                                                  </SelectTrigger>
 
-                                          <SelectContent className="rounded-xl bg-white">
-                                            {["a", "b", "c", "d", "e"].map(
-                                              (option) => {
-                                                const answerKey = `answer_${option}`;
+                                                  <SelectContent className="rounded-xl bg-white">
+                                                    {(
+                                                      [
+                                                        "a",
+                                                        "b",
+                                                        "c",
+                                                        "d",
+                                                        "e",
+                                                      ] as const
+                                                    ).map((option) => {
+                                                      const answerKey =
+                                                        `opsi${option.toUpperCase()}` as
+                                                          | "opsiA"
+                                                          | "opsiB"
+                                                          | "opsiC"
+                                                          | "opsiD"
+                                                          | "opsiE";
 
-                                                const answerText =
-                                                  newAnswer[answerKey] ||
-                                                  data.answerPg[answerKey];
+                                                      const answerText =
+                                                        watch(
+                                                          `pilihanGanda.${answerKey}`,
+                                                        ) ?? "";
 
-                                                return (
-                                                  <SelectItem
-                                                    key={option}
-                                                    value={answerText}
-                                                  >
-                                                    Opsi {option.toUpperCase()}{" "}
-                                                    — {answerText}
-                                                  </SelectItem>
-                                                );
-                                              },
+                                                      if (!answerText)
+                                                        return null;
+
+                                                      return (
+                                                        <SelectItem
+                                                          key={option}
+                                                          value={option}
+                                                        >
+                                                          Opsi{" "}
+                                                          {option.toUpperCase()}{" "}
+                                                          — {answerText}
+                                                        </SelectItem>
+                                                      );
+                                                    })}
+                                                  </SelectContent>
+                                                </Select>
+
+                                                {fieldState.error && (
+                                                  <p className="mt-0.5 text-xs text-red-500">
+                                                    {fieldState.error.message}
+                                                  </p>
+                                                )}
+                                              </>
                                             )}
-                                          </SelectContent>
-                                        </Select>
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
+                                          />
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
 
-                                <DialogFooter className="mt-5 gap-2">
-                                  <DialogClose asChild>
-                                    <Button
-                                      variant="outline"
-                                      className="rounded-xl"
-                                    >
-                                      Batal
-                                    </Button>
-                                  </DialogClose>
+                                  <DialogFooter className="mt-5 gap-2">
+                                    <DialogClose asChild>
+                                      <Button
+                                        variant="outline"
+                                        className="rounded-xl"
+                                      >
+                                        Batal
+                                      </Button>
+                                    </DialogClose>
 
-                                  <DialogClose asChild>
                                     <Button
-                                      onClick={() =>
-                                        handleUpdateQuestions(data.id)
-                                      }
+                                      type="submit"
+                                      form="form-edit-question"
                                       className="rounded-xl bg-blue-600 hover:bg-blue-700"
                                     >
                                       Simpan Perubahan
                                     </Button>
-                                  </DialogClose>
-                                </DialogFooter>
-                              </DialogContent>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </form>
                             </Dialog>
 
                             {/* Delete */}
@@ -483,10 +631,10 @@ export default function ManageExamComponent() {
                               <DialogTrigger asChild>
                                 <Button
                                   type="button"
-                                  variant="outline"
+                                  variant="destructive"
                                   className="h-10 w-full rounded-xl border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 hover:text-red-700"
                                 >
-                                  Hapus
+                                  <Trash2 className="size-5" />
                                 </Button>
                               </DialogTrigger>
 
