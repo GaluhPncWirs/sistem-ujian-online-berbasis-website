@@ -167,7 +167,6 @@ export default function ViewQuestions() {
   const {
     control,
     register,
-    watch,
     reset,
     handleSubmit,
     formState: { errors, isSubmitting },
@@ -203,28 +202,25 @@ export default function ViewQuestions() {
         exam.durasi,
     );
 
-    setOpenDialog(false);
+    try {
+      const { error } = await supabase
+        .from("managed_exams")
+        .insert(selectedExams);
+      if (error) {
+        toast("Gagal ❌", {
+          description: "Error tidak bisa ditambahkan",
+        });
+      }
 
-    // if (selectedExams.length > 0) {
-    //   const { error } = await supabase
-    //     .from("managed_exams")
-    //     .insert(selectedExams);
-    //   if (error) {
-    //     toast("Gagal ❌", {
-    //       description: "Error tidak bisa ditambahkan",
-    //     });
-    //   } else {
-    //     toast("Berhasil ✅", {
-    //       description: "Soal Berhasil Dikirimkan",
-    //     });
-    //   }
-    // } else {
-    //   toast("Gagal ❌", {
-    //     description: "Ada Soal Yang Belum di Kelola, Dicek Kembali",
-    //   });
-    // }
-
-    console.log(selectedExams);
+      setOpenDialog(false);
+      toast("Berhasil ✅", {
+        description: "Soal Berhasil Dikirimkan",
+      });
+    } catch {
+      toast("Gagal ❌", {
+        description: "Terjadi kesalahan. Silakan coba lagi.",
+      });
+    }
   }
 
   async function handleDeleteExam(idExams: number) {
@@ -505,7 +501,7 @@ export default function ViewQuestions() {
                     <TableCell className="pt-5">
                       <div className="flex flex-col gap-2">
                         <Link
-                          href={`/Teacher/dashboard/manageExams?id=${data.id}`}
+                          href={`/Teacher/dashboard/manageExams/${String(data.id)}`}
                           className="inline-flex h-10 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 text-sm font-semibold text-blue-600 transition-colors hover:bg-blue-100"
                         >
                           <PenLine className="size-5" />
