@@ -168,7 +168,7 @@ export default function ManageStudent() {
                                   <HoverCard>
                                     <HoverCardTrigger asChild>
                                       <Link
-                                        href={`/Teacher/dashboard/correctionEssay?idExam=${nilaiUjian.idUjian}&idStudent=${data.student_id}`}
+                                        href={`/Teacher/dashboard/correctionEssay/${nilaiUjian.idUjian}/${data.student_id}`}
                                         className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-600 transition-colors hover:bg-amber-100"
                                       >
                                         Perlu Dinilai

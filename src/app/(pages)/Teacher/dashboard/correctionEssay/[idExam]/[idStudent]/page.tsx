@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -14,8 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabase/data";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import MainContent from "@/layout/mainContent/content";
 
@@ -43,71 +42,130 @@ const assessmentOptions = [
 ];
 
 export default function CorrectionEssay() {
-  const [viewQuestionsExams, setViewQuestionsExams] = useState<any>({});
-  const [giveAssesmentExams, setGiveAssesmentExams] = useState<any>({});
-  const [finalResultAssesment, setFinalResultAssesment] = useState<number>(0);
-  const searchParamsId = useSearchParams().get("idExam");
-  const searchParamsIdStudent = useSearchParams().get("idStudent");
+  const params = useParams<{
+    idExam: string;
+    idStudent: string;
+  }>();
+
+  const idExam = params.idExam;
+  const idStudent = params.idStudent;
+
+  const [viewQuestionsExams, setViewQuestionsExams] = useState<any>(null);
+
+  const [giveAssesmentExams, setGiveAssesmentExams] = useState<
+    Record<string, number>
+  >({});
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
   useEffect(() => {
+    if (!idExam || !idStudent) {
+      setViewQuestionsExams(null);
+      return;
+    }
+
+    let isMounted = true;
+
     async function getExamEssay() {
       const { data, error } = await supabase
         .from("history-exam-student")
         .select(
-          "student_id,exam_id,answer_student,exams(questions_exam,nama_ujian)",
+          `
+          student_id,
+          exam_id,
+          answer_student,
+          exams (
+            questions_exam,
+            nama_ujian
+          )
+        `,
         )
-        .eq("exam_id", Number(searchParamsId))
-        .eq("student_id", searchParamsIdStudent)
+        .eq("exam_id", Number(idExam))
+        .eq("student_id", idStudent)
         .single();
 
       if (error) {
-        console.log("data error ditampilkan");
-      } else {
-        setViewQuestionsExams(data);
+        console.error("Gagal mengambil data essay:", error);
+
+        return;
       }
+
+      if (!isMounted) return;
+
+      setViewQuestionsExams(data);
     }
+
     getExamEssay();
-  }, []);
 
-  function handleChooseAssesment(e: any) {
-    setGiveAssesmentExams((prev: any) => {
-      return {
-        ...prev,
-        [e.target.name]: e.target.value,
-      };
-    });
+    return () => {
+      isMounted = false;
+    };
+  }, [idExam, idStudent]);
+
+  function handleChooseAssesment(e: React.ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target;
+
+    setGiveAssesmentExams((prev) => ({
+      ...prev,
+      [name]: Number(value),
+    }));
   }
 
-  function resultAssesmentExamStudent() {
-    const toNumberValue = Object.values(giveAssesmentExams).map(Number);
-    const totalMaxNilai = toNumberValue.reduce((sum: any) => sum + 100, 0);
-    const resultAssesment = toNumberValue.reduce(
-      (sum: any, q: any) => sum + q,
-      0,
-    );
-    setFinalResultAssesment(
-      Math.round((resultAssesment / totalMaxNilai) * 100),
-    );
-  }
+  const finalResultAssesment = useMemo(() => {
+    const values = Object.values(giveAssesmentExams);
 
-  async function giveAssesment(idExamQuestions: any, idStudent: any) {
-    const { error: errorAssesment } = await supabase
+    if (values.length === 0) {
+      return 0;
+    }
+
+    const totalScore = values.reduce((sum, value) => sum + value, 0);
+
+    const maxScore = values.length * 100;
+
+    return Math.round((totalScore / maxScore) * 100);
+  }, [giveAssesmentExams]);
+
+  async function giveAssesment() {
+    if (!idExam || !idStudent) {
+      toast("Gagal ❌", {
+        description: "Data ujian atau siswa tidak ditemukan.",
+      });
+
+      return;
+    }
+
+    const scores = Object.values(giveAssesmentExams);
+
+    if (scores.length === 0) {
+      toast("Gagal ❌", {
+        description: "Belum ada nilai yang diberikan.",
+      });
+
+      return;
+    }
+
+    const { error } = await supabase
       .from("history-exam-student")
       .update({
         hasil_ujian: finalResultAssesment,
       })
-      .eq("exam_id", idExamQuestions)
+      .eq("exam_id", Number(idExam))
       .eq("student_id", idStudent);
 
-    if (errorAssesment) {
+    if (error) {
+      console.error("Assessment error:", error);
+
       toast("Gagal ❌", {
-        description: "Gagal menilai soal",
+        description: "Gagal menilai soal.",
       });
-    } else {
-      toast("Berhasil ✅", {
-        description: "Soal berhasil dinilai",
-      });
+
+      return;
     }
+
+    toast("Berhasil ✅", {
+      description: `Nilai akhir: ${finalResultAssesment}/100`,
+    });
+
+    setOpenConfirmDialog(false);
   }
 
   return (
@@ -294,11 +352,15 @@ export default function CorrectionEssay() {
                   Kembali
                 </Link>
 
-                <Dialog>
+                <Dialog
+                  open={openConfirmDialog}
+                  onOpenChange={setOpenConfirmDialog}
+                >
                   <DialogTrigger asChild>
                     <Button
+                      type="button"
                       className="h-11 rounded-xl bg-blue-600 px-6 font-semibold shadow-md shadow-blue-600/20 hover:bg-blue-700"
-                      onClick={resultAssesmentExamStudent}
+                      disabled={Object.keys(giveAssesmentExams).length === 0}
                     >
                       Simpan Penilaian
                     </Button>
@@ -322,25 +384,22 @@ export default function CorrectionEssay() {
                     </DialogHeader>
 
                     <DialogFooter className="mt-4 gap-2">
-                      <DialogClose asChild>
-                        <Button variant="outline" className="rounded-xl">
-                          Periksa Lagi
-                        </Button>
-                      </DialogClose>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-xl"
+                        onClick={() => setOpenConfirmDialog(false)}
+                      >
+                        Periksa Lagi
+                      </Button>
 
-                      <DialogClose asChild>
-                        <Button
-                          onClick={() =>
-                            giveAssesment(
-                              viewQuestionsExams.exam_id,
-                              searchParamsIdStudent,
-                            )
-                          }
-                          className="rounded-xl bg-blue-600 hover:bg-blue-700"
-                        >
-                          Ya, Simpan
-                        </Button>
-                      </DialogClose>
+                      <Button
+                        type="button"
+                        onClick={giveAssesment}
+                        className="rounded-xl bg-blue-600 hover:bg-blue-700"
+                      >
+                        Ya, Simpan
+                      </Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>

@@ -52,6 +52,7 @@
         "selesai untuk merombak code di halaman kelola soal ujian",
         "menambahkan fitur pagination di halaman dashboard guru agar data yang di ambil hanya 10 per page tidak keseluruhan datanya",
         "menambahkan fitur pagination di halaman kelola ujian",
-        "memperbaiki error pada component header dashboard"
+        "memperbaiki error pada component header dashboard",
+        "menambahkan fitur pagination pada halaman nilai siswa dan juga memperbaiki code ui di halaman koreksi jawaban essay siswa"
     ]
 }
