@@ -1,126 +1,162 @@
 import { supabase } from "@/lib/supabase/data";
 import { useEffect, useState } from "react";
 
-export function useManageDataExams(getidTeacher: string) {
+const PAGE_SIZE = 10;
+
+export function useManageDataExams(getidTeacher: string, page: number) {
   const [dataManageExams, setDataManageExams] = useState<any[]>([]);
+  const [totalData, setTotalData] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!getidTeacher) {
       setDataManageExams([]);
+      setTotalData(0);
       return;
     }
 
     let isMounted = true;
 
     async function getDataManageExams() {
-      const [
-        { data: managedExams, error: managedExamsError },
-        { data: historyExams, error: historyExamsError },
-        { data: students, error: studentsError },
-      ] = await Promise.all([
-        supabase
+      setIsLoading(true);
+
+      try {
+        // =====================================================
+        // 1. Hitung offset
+        // =====================================================
+
+        const from = (page - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
+        // =====================================================
+        // 2. Ambil managed exams + total data
+        // =====================================================
+
+        const {
+          data: managedExams,
+          error: managedExamsError,
+          count,
+        } = await supabase
           .from("managed_exams")
           .select(
-            "kelas, dibuat_tgl, tenggat_waktu, idExams, exams (nama_ujian)",
+            `kelas, dibuat_tgl, tenggat_waktu, idExams, exams(nama_ujian)`,
+            { count: "exact" },
           )
-          .eq("id_Teacher", getidTeacher),
+          .eq("id_Teacher", getidTeacher)
+          .order("dibuat_tgl", {
+            ascending: false,
+          })
+          .range(from, to);
 
-        supabase
-          .from("history-exam-student")
-          .select(
-            `exam_id, student_id, kelas, hasil_ujian, status_exam, exams!inner (idTeacher)`,
-          )
-          .eq("exams.idTeacher", getidTeacher),
+        if (managedExamsError) {
+          console.error("managedExams ERROR:", managedExamsError);
 
-        supabase.from("account-student").select("classes, idStudent"),
-      ]);
-
-      if (managedExamsError) {
-        console.error("managedExams ERROR:", {
-          message: managedExamsError.message,
-          details: managedExamsError.details,
-          hint: managedExamsError.hint,
-          code: managedExamsError.code,
-        });
-      }
-
-      if (historyExamsError) {
-        console.error("historyExams ERROR:", {
-          message: historyExamsError.message,
-          details: historyExamsError.details,
-          hint: historyExamsError.hint,
-          code: historyExamsError.code,
-        });
-      }
-
-      if (studentsError) {
-        console.error("students ERROR:", {
-          message: studentsError.message,
-          details: studentsError.details,
-          hint: studentsError.hint,
-          code: studentsError.code,
-        });
-      }
-
-      if (managedExamsError || historyExamsError || studentsError) {
-        return;
-      }
-
-      if (!isMounted) return;
-
-      // =========================================================
-      // 1. Buat Map history berdasarkan kelas + exam_id
-      // =========================================================
-
-      const completeExamMap = new Map<
-        string,
-        {
-          studentIds: string[];
-          examIds: string[];
-          hasilUjian: unknown[];
+          return;
         }
-      >();
 
-      historyExams?.forEach((item) => {
-        if (!item.exams) return;
+        if (!isMounted) return;
 
-        const key = `${item.kelas}_${item.exam_id}`;
+        setTotalData(count ?? 0);
 
-        const existing = completeExamMap.get(key);
-
-        if (existing) {
-          existing.studentIds.push(item.student_id);
-          existing.examIds.push(item.exam_id);
-          existing.hasilUjian.push(item.hasil_ujian);
-        } else {
-          completeExamMap.set(key, {
-            studentIds: [item.student_id],
-            examIds: [item.exam_id],
-            hasilUjian: [item.hasil_ujian],
-          });
+        // Tidak ada data pada halaman tersebut
+        if (!managedExams?.length) {
+          setDataManageExams([]);
+          return;
         }
-      });
 
-      // =========================================================
-      // 2. Buat Map jumlah siswa berdasarkan kelas
-      // =========================================================
+        // =====================================================
+        // 3. Ambil ID exam dari halaman saat ini
+        // =====================================================
 
-      const studentMap = new Map<string, string[]>();
+        const examIds = managedExams
+          .map((exam) => exam.idExams)
+          .filter(Boolean);
 
-      students?.forEach((student) => {
-        const existingStudents = studentMap.get(student.classes) ?? [];
+        // =====================================================
+        // 4. Ambil history + student secara paralel
+        // =====================================================
 
-        existingStudents.push(student.idStudent);
+        const [
+          { data: historyExams, error: historyExamsError },
+          { data: students, error: studentsError },
+        ] = await Promise.all([
+          supabase
+            .from("history-exam-student")
+            .select(
+              `exam_id, student_id, kelas, hasil_ujian, status_exam, exams!inner(idTeacher)`,
+            )
+            .eq("exams.idTeacher", getidTeacher)
+            .in("exam_id", examIds),
 
-        studentMap.set(student.classes, existingStudents);
-      });
+          supabase.from("account-student").select("classes, idStudent"),
+        ]);
 
-      // =========================================================
-      // 3. Gabungkan managed exams dengan history + student
-      // =========================================================
+        if (historyExamsError) {
+          console.error("historyExams ERROR:", historyExamsError);
 
-      const mergedData =
-        managedExams?.map((exam) => {
+          return;
+        }
+
+        if (studentsError) {
+          console.error("students ERROR:", studentsError);
+
+          return;
+        }
+
+        if (!isMounted) return;
+
+        // =====================================================
+        // 5. Map history berdasarkan kelas + exam
+        // =====================================================
+
+        const completeExamMap = new Map<
+          string,
+          {
+            studentIds: string[];
+            examIds: string[];
+            hasilUjian: unknown[];
+          }
+        >();
+
+        historyExams?.forEach((item) => {
+          if (!item.exams) return;
+
+          const key = `${item.kelas}_${item.exam_id}`;
+
+          const existing = completeExamMap.get(key);
+
+          if (existing) {
+            existing.studentIds.push(item.student_id);
+            existing.examIds.push(item.exam_id);
+            existing.hasilUjian.push(item.hasil_ujian);
+          } else {
+            completeExamMap.set(key, {
+              studentIds: [item.student_id],
+              examIds: [item.exam_id],
+              hasilUjian: [item.hasil_ujian],
+            });
+          }
+        });
+
+        // =====================================================
+        // 6. Map student berdasarkan kelas
+        // =====================================================
+
+        const studentMap = new Map<string, string[]>();
+
+        students?.forEach((student) => {
+          const existingStudents = studentMap.get(student.classes) ?? [];
+
+          existingStudents.push(student.idStudent);
+
+          studentMap.set(student.classes, existingStudents);
+        });
+
+        // =====================================================
+        // 7. Merge data
+        // =====================================================
+
+        const mergedData = managedExams.map((exam) => {
           const key = `${exam.kelas}_${exam.idExams}`;
 
           const examHistory = completeExamMap.get(key);
@@ -136,9 +172,16 @@ export function useManageDataExams(getidTeacher: string) {
 
             hasil_ujian: examHistory?.hasilUjian ?? [],
           };
-        }) ?? [];
+        });
 
-      setDataManageExams(mergedData);
+        setDataManageExams(mergedData);
+      } catch (error) {
+        console.error("Gagal mengambil data manage exams:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
     }
 
     getDataManageExams();
@@ -146,7 +189,12 @@ export function useManageDataExams(getidTeacher: string) {
     return () => {
       isMounted = false;
     };
-  }, [getidTeacher]);
+  }, [getidTeacher, page]);
 
-  return dataManageExams;
+  return {
+    dataManageExams,
+    totalData,
+    isLoading,
+    pageSize: PAGE_SIZE,
+  };
 }

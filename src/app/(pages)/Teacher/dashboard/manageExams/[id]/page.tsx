@@ -116,6 +116,26 @@ export default function ManageExamComponent() {
     },
   });
 
+  useEffect(() => {
+    if (!getidTeacher) return;
+    async function handleViewQuestions() {
+      const { data, error } = await supabase
+        .from("exams")
+        .select("*")
+        .eq("id", Number(id))
+        .eq("idTeacher", getidTeacher)
+        .single();
+
+      if (error) {
+        toast("Gagal ❌", {
+          description: "Soal gagal ditampilkan.",
+        });
+      }
+      setViewQuestions(data);
+    }
+    handleViewQuestions();
+  }, [getidTeacher]);
+
   async function onSubmit(formData: EditExamQuestionSchemaType) {
     const examId = viewQuestions?.id;
 
@@ -237,26 +257,6 @@ export default function ManageExamComponent() {
       });
     }
   }
-
-  useEffect(() => {
-    if (!getidTeacher) return;
-    async function handleViewQuestions() {
-      const { data, error } = await supabase
-        .from("exams")
-        .select("*")
-        .eq("id", Number(id))
-        .eq("idTeacher", getidTeacher)
-        .single();
-
-      if (error) {
-        toast("Gagal ❌", {
-          description: "Soal gagal ditampilkan.",
-        });
-      }
-      setViewQuestions(data);
-    }
-    handleViewQuestions();
-  }, [getidTeacher]);
 
   async function handleDeleteQuestion(questionId: string) {
     try {

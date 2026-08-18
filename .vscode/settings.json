@@ -48,6 +48,7 @@
         "selesai untuk konfigurasi menggunakan zod dan RFH di halaman kelola ujian",
         "selesai memperbaiki bug pada saat edit soal ujian",
         "memperbaiki fungsi untuk hapus data ujian seelesai",
-        "meperbaiki penamaan pada data field di bagian pilihan ganda"
+        "meperbaiki penamaan pada data field di bagian pilihan ganda",
+        "selesai untuk merombak code di halaman kelola soal ujian"
     ]
 }
