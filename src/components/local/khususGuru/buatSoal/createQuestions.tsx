@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase/data";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -44,11 +44,11 @@ const createExamSchema = z
 
     pilihanGanda: z
       .object({
-        opsiA: z.string(),
-        opsiB: z.string(),
-        opsiC: z.string(),
-        opsiD: z.string(),
-        opsiE: z.string(),
+        answer_a: z.string(),
+        answer_b: z.string(),
+        answer_c: z.string(),
+        answer_d: z.string(),
+        answer_e: z.string(),
       })
       .optional(),
 
@@ -97,11 +97,11 @@ const createExamSchema = z
         });
       } else {
         const opsi = [
-          ["opsiA", pilihan.opsiA],
-          ["opsiB", pilihan.opsiB],
-          ["opsiC", pilihan.opsiC],
-          ["opsiD", pilihan.opsiD],
-          ["opsiE", pilihan.opsiE],
+          ["answer_a", pilihan.answer_a],
+          ["answer_b", pilihan.answer_b],
+          ["answer_c", pilihan.answer_c],
+          ["answer_d", pilihan.answer_d],
+          ["answer_e", pilihan.answer_e],
         ] as const;
 
         opsi.forEach(([field, value]) => {
@@ -150,11 +150,11 @@ export default function CreateNewQuestions() {
 
       // pilihan ganda
       pilihanGanda: {
-        opsiA: "",
-        opsiB: "",
-        opsiC: "",
-        opsiD: "",
-        opsiE: "",
+        answer_a: "",
+        answer_b: "",
+        answer_c: "",
+        answer_d: "",
+        answer_e: "",
       },
       jawabanYangBenar: "",
     },
@@ -168,11 +168,11 @@ export default function CreateNewQuestions() {
     "answer_a" | "answer_b" | "answer_c" | "answer_d" | "answer_e",
     string
   > = {
-    answer_a: watch("pilihanGanda.opsiA") ?? "",
-    answer_b: watch("pilihanGanda.opsiB") ?? "",
-    answer_c: watch("pilihanGanda.opsiC") ?? "",
-    answer_d: watch("pilihanGanda.opsiD") ?? "",
-    answer_e: watch("pilihanGanda.opsiE") ?? "",
+    answer_a: watch("pilihanGanda.answer_a") ?? "",
+    answer_b: watch("pilihanGanda.answer_b") ?? "",
+    answer_c: watch("pilihanGanda.answer_c") ?? "",
+    answer_d: watch("pilihanGanda.answer_d") ?? "",
+    answer_e: watch("pilihanGanda.answer_e") ?? "",
   };
   const selectCorrectAnswer = watch("jawabanYangBenar");
 
@@ -545,16 +545,12 @@ export default function CreateNewQuestions() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {examOptions.map((option: ExamOption) => {
                   const answerKey = `answer_${option}` as keyof typeof answer;
-                  const optionKey = `opsi${option.toUpperCase()}` as
-                    | "opsiA"
-                    | "opsiB"
-                    | "opsiC"
-                    | "opsiD"
-                    | "opsiE";
-                  const optionField = `pilihanGanda.${optionKey}` as const;
+                  const optionField = `pilihanGanda.answer_${option}` as const;
                   const optionError =
                     errors.pilihanGanda?.[
-                      optionKey as keyof typeof errors.pilihanGanda
+                      `answer_${option}` as keyof NonNullable<
+                        typeof errors.pilihanGanda
+                      >
                     ];
                   const optionErrorMessage =
                     typeof optionError === "object" && optionError !== null

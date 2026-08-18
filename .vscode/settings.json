@@ -46,6 +46,7 @@
         "selesai untuk refaktor code di halaman kelola ujian menggunakan zod dan RFH",
         "memperbaiki desain ui di halaman kelola ujian",
         "selesai untuk konfigurasi menggunakan zod dan RFH di halaman kelola ujian",
-        "selesai memperbaiki bug pada saat edit soal ujian"
+        "selesai memperbaiki bug pada saat edit soal ujian",
+        "memperbaiki fungsi untuk hapus data ujian seelesai"
     ]
 }
