@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 type propsHeaderDahboard = {
   user: string;
   fullName: string;
-  exams: any;
+  exams?: any;
 };
 
 export default function HeaderDasboard(props: propsHeaderDahboard) {

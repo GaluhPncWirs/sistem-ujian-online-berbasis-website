@@ -40,7 +40,7 @@ export default function Teacher() {
   }
   const getidTeacher = useGetIdUsers((state) => state.idUser);
   const dataUserTeacher = useGetDataUsers((state) => state.dataUsers);
-  const dataStudentExams = useResultExamDataStudent(getidTeacher);
+  // const dataStudentExams = useResultExamDataStudent(getidTeacher);
   const { averageValueExam, jumlahSiswa } = useGetStatistics(getidTeacher);
 
   // pagination
@@ -55,7 +55,7 @@ export default function Teacher() {
         <HeaderDasboard
           user="Pengajar"
           fullName={dataUserTeacher?.fullName ?? ""}
-          exams={dataStudentExams}
+          // exams={dataStudentExams}
         />
         <div className="space-y-8">
           {/* ================= SUMMARY ================= */}

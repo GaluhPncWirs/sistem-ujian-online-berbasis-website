@@ -51,6 +51,7 @@
         "meperbaiki penamaan pada data field di bagian pilihan ganda",
         "selesai untuk merombak code di halaman kelola soal ujian",
         "menambahkan fitur pagination di halaman dashboard guru agar data yang di ambil hanya 10 per page tidak keseluruhan datanya",
-        "menambahkan fitur pagination di halaman kelola ujian"
+        "menambahkan fitur pagination di halaman kelola ujian",
+        "memperbaiki error pada component header dashboard"
     ]
 }
