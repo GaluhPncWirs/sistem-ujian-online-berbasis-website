@@ -21,12 +21,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useRandomId } from "@/app/hooks/getRandomId";
-import { useManageExamsData } from "@/app/hooks/getDataManageExams";
 import { Textarea } from "@/components/ui/textarea";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+import { useDataNameExams } from "@/app/hooks/getDataExams";
 
 const createExamSchema = z
   .object({
@@ -132,7 +132,9 @@ type ExamOption = (typeof examOptions)[number];
 
 export default function CreateNewQuestions() {
   const idTeacher = useGetIdUsers((state) => state.idUser);
-  const dataNameExam = useManageExamsData(idTeacher);
+  const dataNameExam = useDataNameExams(idTeacher);
+
+  console.log(dataNameExam);
   const [openDialog, setOpenDialog] = useState(false);
   const {
     control,
@@ -639,7 +641,7 @@ export default function CreateNewQuestions() {
           )}
 
           {/* ================= ACTION ================= */}
-          <div className="flex flex-col gap-3 border-t border-slate-100 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 border-t pt-5 border-slate-200 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs leading-5 text-slate-400">
               Pastikan seluruh informasi soal sudah benar sebelum disimpan.
             </p>

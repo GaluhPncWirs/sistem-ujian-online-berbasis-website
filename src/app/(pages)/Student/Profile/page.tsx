@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useDataExams } from "@/app/hooks/getDataExams";
+import { useDataExams } from "@/app/hooks/getScheduleExam";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { useGetDataUsers } from "@/store/useGetDataUsers/state";
 import MainContent from "@/layout/mainContent/content";

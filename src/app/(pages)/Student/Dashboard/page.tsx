@@ -29,7 +29,7 @@ import { DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import HeaderDasboard from "@/components/local/forDasboard/content";
-import { useDataExams } from "@/app/hooks/getDataExams";
+import { useDataExams } from "@/app/hooks/getScheduleExam";
 import { toast } from "sonner";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { useGetDataUsers } from "@/store/useGetDataUsers/state";

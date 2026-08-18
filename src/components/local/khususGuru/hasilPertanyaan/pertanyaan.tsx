@@ -1,4 +1,5 @@
-import { useManageExamsData } from "@/app/hooks/getDataManageExams";
+import { useManageExams } from "@/app/hooks/getDataManageExams";
+import PaginationUi from "@/components/global/pagination/content";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -162,8 +163,14 @@ type SendExamToStudentSchemaType = z.infer<typeof sendExamToStudentSchema>;
 
 export default function ViewQuestions() {
   const idTeacher = useGetIdUsers((state) => state.idUser);
-  const [openDialog, setOpenDialog] = useState(false);
-  const viewManageQuestionsExam = useManageExamsData(idTeacher);
+  const [page, setPage] = useState(1);
+  const {
+    manageExams: dataManageExams,
+    totalData,
+    isLoading,
+    pageSize,
+  } = useManageExams(idTeacher, page);
+  const totalPages = Math.ceil(totalData / pageSize);
   const {
     control,
     register,
@@ -176,12 +183,14 @@ export default function ViewQuestions() {
       exams: [],
     },
   });
+  const [selectedExam, setSelectedExam] = useState<any | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
-    if (!viewManageQuestionsExam?.length) return;
+    if (!dataManageExams?.length) return;
 
     reset({
-      exams: viewManageQuestionsExam.map((exam: any) => ({
+      exams: dataManageExams.map((exam: any) => ({
         examId: String(exam.id),
         kelas: "",
         tanggalUjian: undefined,
@@ -190,7 +199,7 @@ export default function ViewQuestions() {
         durasi: "",
       })),
     });
-  }, [viewManageQuestionsExam, reset]);
+  }, [dataManageExams, reset]);
 
   async function onSubmit(data: SendExamToStudentSchemaType) {
     const selectedExams = data.exams.filter(
@@ -223,19 +232,40 @@ export default function ViewQuestions() {
     }
   }
 
-  async function handleDeleteExam(idExams: number) {
-    const { error } = await supabase
-      .from("exams")
-      .delete()
-      .eq("id", Number(idExams));
+  function getDataBeforeDelete(idExam: string, namaUjian: string) {
+    setSelectedExam({
+      idExam,
+      namaUjian,
+    });
+    setOpenDialog(true);
+  }
 
-    if (error) {
+  async function handleDeleteExam(idExam: string) {
+    if (!idExam) {
       toast("Gagal ❌", {
-        description: "Soal Gagal Dihapus",
+        description: "ID ujian tidak ditemukan.",
       });
-    } else {
+      return;
+    }
+
+    try {
+      const { error } = await supabase.from("exams").delete().eq("id", idExam);
+      if (error) {
+        console.error("Delete exam error:", error);
+        toast("Gagal ❌", {
+          description: "Ujian gagal dihapus.",
+        });
+        return;
+      }
+
       toast("Berhasil ✅", {
-        description: "Soal Telah Berhasil Dihapus",
+        description: "Ujian berhasil dihapus.",
+      });
+    } catch (error) {
+      console.error("Unexpected delete error:", error);
+
+      toast("Gagal ❌", {
+        description: "Terjadi kesalahan. Silakan coba lagi.",
       });
     }
   }
@@ -261,7 +291,7 @@ export default function ViewQuestions() {
           </div>
 
           <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
-            {viewManageQuestionsExam.length} Ujian
+            {dataManageExams.length} Ujian
           </div>
         </div>
       </div>
@@ -303,8 +333,8 @@ export default function ViewQuestions() {
             </TableHeader>
 
             <TableBody>
-              {viewManageQuestionsExam.length > 0 ? (
-                viewManageQuestionsExam.map((data: any, i: number) => (
+              {dataManageExams.length > 0 ? (
+                dataManageExams.map((data: any, i: number) => (
                   <TableRow
                     key={data.id}
                     className="align-top transition-colors hover:bg-slate-50"
@@ -507,57 +537,16 @@ export default function ViewQuestions() {
                           <PenLine className="size-5" />
                         </Link>
 
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="h-10 rounded-xl border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 hover:text-red-700"
-                            >
-                              <Trash2 className="size-5" />
-                            </Button>
-                          </DialogTrigger>
-
-                          <DialogContent className="rounded-2xl sm:max-w-md">
-                            <DialogHeader>
-                              <DialogTitle className="text-xl font-bold">
-                                Hapus Soal Ujian
-                              </DialogTitle>
-
-                              <DialogDescription className="pt-2 leading-6">
-                                Apakah Anda yakin ingin menghapus ujian{" "}
-                                <span className="font-bold text-slate-900">
-                                  "{data.nama_ujian}"
-                                </span>
-                                ?
-                                <span className="mt-2 block">
-                                  Tindakan ini tidak dapat dibatalkan.
-                                </span>
-                              </DialogDescription>
-                            </DialogHeader>
-
-                            <DialogFooter className="mt-4 gap-2">
-                              <DialogClose asChild>
-                                <Button
-                                  variant="outline"
-                                  className="rounded-xl"
-                                >
-                                  Batal
-                                </Button>
-                              </DialogClose>
-
-                              <DialogClose asChild>
-                                <Button
-                                  variant="destructive"
-                                  className="rounded-xl bg-red-600 hover:bg-red-700"
-                                  onClick={() => handleDeleteExam(data.id)}
-                                >
-                                  Hapus Ujian
-                                </Button>
-                              </DialogClose>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() =>
+                            getDataBeforeDelete(data.id, data.nama_ujian)
+                          }
+                          className="h-10 rounded-xl border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 hover:text-red-700"
+                        >
+                          <Trash2 className="size-5" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -583,8 +572,56 @@ export default function ViewQuestions() {
           </Table>
         </div>
 
+        {/* ================= DIALOG ================= */}
+        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+          <DialogContent className="rounded-2xl sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">
+                Hapus Soal Ujian
+              </DialogTitle>
+
+              <DialogDescription className="pt-2 leading-6">
+                Apakah Anda yakin ingin menghapus ujian{" "}
+                <span className="font-bold text-slate-900">
+                  "{selectedExam?.namaUjian}"
+                </span>
+                ?
+                <span className="mt-2 block">
+                  Tindakan ini tidak dapat dibatalkan.
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+
+            <DialogFooter className="mt-4 gap-2">
+              <DialogClose asChild>
+                <Button variant="outline" className="rounded-xl">
+                  Batal
+                </Button>
+              </DialogClose>
+
+              <DialogClose asChild>
+                <Button
+                  variant="destructive"
+                  className="rounded-xl bg-red-600 hover:bg-red-700"
+                  onClick={() => handleDeleteExam(selectedExam.idExam)}
+                >
+                  Hapus Ujian
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <div className="border-t border-slate-200" />
+
+        <PaginationUi
+          currentPage={page}
+          totalPage={totalPages}
+          onPageChange={setPage}
+          isLoading={isLoading}
+        />
         {/* ================= SEND NOTE + ACTION ================= */}
-        <div className="flex flex-col gap-5 border-t border-slate-200 px-5 py-5 sm:px-7 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-5 px-5 pb-5 sm:px-7 md:flex-row md:items-center md:justify-between">
           <div className="flex items-start gap-3 rounded-xl bg-amber-50 p-4 md:max-w-2xl">
             <AlertCircle className="mt-0.5 size-5 shrink-0 text-amber-600" />
 

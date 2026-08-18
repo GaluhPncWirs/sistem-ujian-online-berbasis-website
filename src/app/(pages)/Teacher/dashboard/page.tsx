@@ -42,6 +42,8 @@ export default function Teacher() {
   const dataUserTeacher = useGetDataUsers((state) => state.dataUsers);
   const dataStudentExams = useResultExamDataStudent(getidTeacher);
   const { averageValueExam, jumlahSiswa } = useGetStatistics(getidTeacher);
+
+  // pagination
   const [page, setPage] = useState(1);
   const { dataManageExams, totalData, isLoading, pageSize } =
     useManageDataExams(getidTeacher, page);
