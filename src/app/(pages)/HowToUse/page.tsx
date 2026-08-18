@@ -125,7 +125,7 @@ export default function CaraPakaiSistemUjian() {
 
           {/* Tips */}
           <div className="mx-auto mt-10 max-w-5xl">
-            <div className="overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-white shadow-sm">
+            <div className="overflow-hidden rounded-2xl border bg-white border-amber-200 shadow-sm">
               <div className="p-6 sm:p-8">
                 <div className="flex items-start gap-4">
                   {/* Icon */}

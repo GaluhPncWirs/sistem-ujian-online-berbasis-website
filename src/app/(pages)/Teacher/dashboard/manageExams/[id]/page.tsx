@@ -57,12 +57,40 @@ const editExamQuestionSchema = z.object({
   jawabanYangBenar: z.enum(["a", "b", "c", "d", "e"]).optional(),
 });
 
+type Ujian = {
+  id: string;
+  answerPg: {
+    answer_a: string;
+    answer_b: string;
+    answer_c: string;
+    answer_d: string;
+    answer_e: string;
+  };
+  correctAnswer: string;
+  questions: string;
+};
+
+type DataExam = {
+  created_at_exams: string;
+  id: number;
+  idTeacher: string;
+  nama_ujian: string;
+  questions_exam: Ujian[];
+  tipeUjian: string;
+};
+
 type EditExamQuestionSchemaType = z.infer<typeof editExamQuestionSchema>;
 
 export default function ManageExamComponent() {
   const params = useParams<{ id: string }>();
   const id = params.id;
-  const [openDialog, setOpenDialog] = useState(false);
+  const [viewQuestions, setViewQuestions] = useState<DataExam | null>(null);
+  const getidTeacher = useGetIdUsers((state) => state.idUser);
+  const [selectedQuestion, setSelectedQuestion] = useState<any | null>(null);
+  const [openDialog, setOpenDialog] = useState<Record<string, boolean>>({
+    editExam: false,
+    deleteExam: false,
+  });
   const {
     control,
     register,
@@ -114,20 +142,6 @@ export default function ManageExamComponent() {
     setOpenDialog(false);
   }
 
-  const [viewQuestions, setViewQuestions] = useState<any>({});
-  const [newAnswer, setNewAnswer] = useState({
-    answer_a: "",
-    answer_b: "",
-    answer_c: "",
-    answer_d: "",
-    answer_e: "",
-  });
-  const [selectCorrectNewAnswer, setSelectCorrectNewAnswer] =
-    useState<string>("");
-  const [updateQuestion, setUpdateQuestion] = useState<string>("");
-  const getidTeacher = useGetIdUsers((state) => state.idUser);
-  const [selectedQuestion, setSelectedQuestion] = useState<any | null>(null);
-
   useEffect(() => {
     if (!getidTeacher) return;
     async function handleViewQuestions() {
@@ -148,91 +162,137 @@ export default function ManageExamComponent() {
     handleViewQuestions();
   }, [getidTeacher]);
 
-  async function handleUpdateQuestions(idQuestion: string) {
-    const { data: examData, error: fetchError }: any = await supabase
-      .from("exams")
-      .select("id,questions_exam,tipeUjian")
-      .eq("id", Number(id))
-      .single();
+  // async function handleUpdateQuestions(idQuestion: string) {
+  //   const { data: examData, error: fetchError }: any = await supabase
+  //     .from("exams")
+  //     .select("id,questions_exam,tipeUjian")
+  //     .eq("id", Number(id))
+  //     .single();
 
-    if (fetchError) {
-      toast("Gagal Ambil Data", { description: "Ujian tidak ditemukan" });
-    } else {
-      const updateDataExams: any = (examData?.questions_exam || []).map(
-        (q: any) => {
-          if (q.id === idQuestion && examData.tipeUjian === "pg") {
-            return {
-              ...q,
-              questions: updateQuestion,
-              answerPg: newAnswer,
-              correctAnswer: selectCorrectNewAnswer,
-            };
-          } else if (q.id === idQuestion && examData.tipeUjian === "essay") {
-            return {
-              ...q,
-              questions: updateQuestion,
-            };
-          } else {
-            return q;
-          }
-        },
+  //   if (fetchError) {
+  //     toast("Gagal Ambil Data", { description: "Ujian tidak ditemukan" });
+  //   } else {
+  //     const updateDataExams: any = (examData?.questions_exam || []).map(
+  //       (q: any) => {
+  //         if (q.id === idQuestion && examData.tipeUjian === "pg") {
+  //           return {
+  //             ...q,
+  //             questions: updateQuestion,
+  //             answerPg: newAnswer,
+  //             correctAnswer: selectCorrectNewAnswer,
+  //           };
+  //         } else if (q.id === idQuestion && examData.tipeUjian === "essay") {
+  //           return {
+  //             ...q,
+  //             questions: updateQuestion,
+  //           };
+  //         } else {
+  //           return q;
+  //         }
+  //       },
+  //     );
+  //     const { error } = await supabase
+  //       .from("exams")
+  //       .update({ questions_exam: updateDataExams })
+  //       .eq("id", Number(id));
+
+  //     if (error) {
+  //       toast("Gagal ❌", {
+  //         description: "Soal gagal diedit. Coba periksa kembali.",
+  //       });
+  //     } else {
+  //       toast("Berhasil ✅", {
+  //         description: "Soal berhasil diperbarui.",
+  //       });
+  //     }
+  //   }
+  // }
+
+  async function handleDeleteQuestion(questionId: string) {
+    try {
+      // =========================================
+      // 1. Ambil data soal dari exam
+      // =========================================
+
+      const { data: exam, error: fetchError } = await supabase
+        .from("exams")
+        .select("questions_exam")
+        .eq("id", viewQuestions?.id)
+        .single();
+
+      if (fetchError) {
+        console.error("Fetch exam error:", fetchError);
+
+        toast("Gagal ❌", {
+          description: "Data ujian gagal diambil.",
+        });
+
+        return;
+      }
+
+      // =========================================
+      // 2. Pastikan questions_exam berupa array
+      // =========================================
+
+      const questions = Array.isArray(exam?.questions_exam)
+        ? exam.questions_exam
+        : [];
+
+      // =========================================
+      // 3. Hapus soal berdasarkan ID soal
+      // =========================================
+
+      const updatedQuestions = questions.filter(
+        (question: { id: string }) => question.id !== questionId,
       );
-      const { error } = await supabase
-        .from("exams")
-        .update({ questions_exam: updateDataExams })
-        .eq("id", Number(id));
 
-      if (error) {
+      // =========================================
+      // 4. Pastikan soal memang ditemukan
+      // =========================================
+
+      if (updatedQuestions.length === questions.length) {
         toast("Gagal ❌", {
-          description: "Soal gagal diedit. Coba periksa kembali.",
+          description: "Soal yang ingin dihapus tidak ditemukan.",
         });
-      } else {
-        toast("Berhasil ✅", {
-          description: "Soal berhasil diperbarui.",
-        });
+
+        return;
       }
-    }
-  }
 
-  async function handleDeleteQuestions(idQuestion: number) {
-    const { data, error }: any = await supabase
-      .from("exams")
-      .select("id, questions_exam")
-      .eq("id", Number(id))
-      .single();
+      // =========================================
+      // 5. Update kembali questions_exam
+      // =========================================
 
-    const updatedQuestions = data.questions_exam.filter(
-      (q: any) => q.id !== idQuestion,
-    );
+      const { error: updateError } = await supabase
+        .from("exams")
+        .update({
+          questions_exam: updatedQuestions,
+        })
+        .eq("id", viewQuestions?.id);
 
-    if (error) {
-      toast("Gagal ❌", {
-        description: "Soal Gagal Dihapus",
+      if (updateError) {
+        console.error("Update exam error:", updateError);
+
+        toast("Gagal ❌", {
+          description: "Soal gagal dihapus.",
+        });
+
+        return;
+      }
+
+      // =========================================
+      // 6. Berhasil
+      // =========================================
+
+      toast("Berhasil ✅", {
+        description: "Soal berhasil dihapus.",
       });
-    } else {
-      const { error: errorDeleteData }: any = await supabase
-        .from("exams")
-        .update({ questions_exam: updatedQuestions })
-        .eq("id", Number(id));
+    } catch (error) {
+      console.error("Delete question error:", error);
 
-      if (errorDeleteData) {
-        toast("Gagal ❌", {
-          description: "Soal Gagal Dihapus",
-        });
-      } else {
-        toast("Berhasil ✅", {
-          description: "Soal Telah Berhasil Dihapus",
-        });
-      }
+      toast("Gagal ❌", {
+        description: "Terjadi kesalahan. Silakan coba lagi.",
+      });
     }
-  }
-
-  function handleUpdateAnswer(event: any) {
-    const { id, value } = event.target;
-    setNewAnswer((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
   }
 
   function getDataBeforeUpdate(isTypeExam: "pg" | "essay", dataQuestion: any) {
@@ -266,12 +326,23 @@ export default function ManageExamComponent() {
       });
     }
 
-    setOpenDialog(true);
+    setOpenDialog((prev) => ({
+      ...prev,
+      editExam: true,
+    }));
+  }
+
+  function getDataBeforeDelete(idExam: string) {
+    setSelectedQuestion(idExam);
+    setOpenDialog((prev) => ({
+      ...prev,
+      deleteExam: true,
+    }));
   }
 
   return (
     <MainContent>
-      {Object.values(viewQuestions).length > 0 ? (
+      {Object.values(viewQuestions ?? {}).length > 0 ? (
         <div className="space-y-6">
           {/* ================= HEADER ================= */}
           <section className="overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-r from-blue-600 via-blue-600 to-cyan-500 p-6 text-white shadow-lg shadow-blue-100 sm:p-8">
@@ -289,17 +360,17 @@ export default function ManageExamComponent() {
 
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <span className="text-base font-semibold sm:text-lg">
-                    {viewQuestions.nama_ujian}
+                    {viewQuestions?.nama_ujian}
                   </span>
 
                   <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide backdrop-blur-sm">
-                    {viewQuestions.tipeUjian === "pg"
+                    {viewQuestions?.tipeUjian === "pg"
                       ? "Pilihan Ganda"
                       : "Essay"}
                   </span>
 
                   <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
-                    {viewQuestions.questions_exam?.length || 0} Soal
+                    {viewQuestions?.questions_exam?.length || 0} Soal
                   </span>
                 </div>
               </div>
@@ -341,163 +412,123 @@ export default function ManageExamComponent() {
                 </TableHeader>
 
                 <TableBody>
-                  {viewQuestions.questions_exam?.length > 0 ? (
-                    viewQuestions.questions_exam.map((data: any, i: number) => (
-                      <TableRow
-                        key={data.id ?? i}
-                        className="align-top transition-colors hover:bg-slate-50"
-                      >
-                        {/* Number */}
-                        <TableCell className="pt-5 font-bold text-slate-400">
-                          {String(i + 1).padStart(2, "0")}
-                        </TableCell>
+                  {viewQuestions?.questions_exam?.length > 0 ? (
+                    viewQuestions?.questions_exam.map(
+                      (data: any, i: number) => (
+                        <TableRow
+                          key={data.id ?? i}
+                          className="align-top transition-colors hover:bg-slate-50"
+                        >
+                          {/* Number */}
+                          <TableCell className="pt-5 font-bold text-slate-400">
+                            {String(i + 1).padStart(2, "0")}
+                          </TableCell>
 
-                        {/* Question */}
-                        <TableCell className="pt-5">
-                          <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                            <p className="text-base font-semibold leading-6 text-slate-900">
-                              {data.questions}
-                            </p>
+                          {/* Question */}
+                          <TableCell className="pt-5">
+                            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+                              <p className="text-base font-semibold leading-6 text-slate-900">
+                                {data.questions}
+                              </p>
 
-                            {/* Multiple Choice */}
-                            {viewQuestions.tipeUjian === "pg" && (
-                              <div className="mt-4 space-y-2">
-                                {["a", "b", "c", "d", "e"].map((option) => {
-                                  const answerKey = `answer_${option}`;
-                                  const answerText = data.answerPg?.[answerKey];
+                              {/* Multiple Choice */}
+                              {viewQuestions.tipeUjian === "pg" && (
+                                <div className="mt-4 space-y-2">
+                                  {["a", "b", "c", "d", "e"].map((option) => {
+                                    const answerKey = `answer_${option}`;
+                                    const answerText =
+                                      data.answerPg?.[answerKey];
 
-                                  const isCorrect =
-                                    data.correctAnswer === answerText;
+                                    const isCorrect =
+                                      data.correctAnswer === answerText;
 
-                                  return (
-                                    <div
-                                      key={option}
-                                      className={`flex items-start gap-3 rounded-lg border px-3 py-2.5 ${
-                                        isCorrect
-                                          ? "border-emerald-200 bg-emerald-50"
-                                          : "border-slate-100 bg-white"
-                                      }`}
-                                    >
-                                      <span
-                                        className={`flex size-7 shrink-0 items-center justify-center rounded-md text-xs font-bold ${
+                                    return (
+                                      <div
+                                        key={option}
+                                        className={`flex items-start gap-3 rounded-lg border px-3 py-2.5 ${
                                           isCorrect
-                                            ? "bg-emerald-500 text-white"
-                                            : "bg-slate-100 text-slate-500"
+                                            ? "border-emerald-200 bg-emerald-50"
+                                            : "border-slate-100 bg-white"
                                         }`}
                                       >
-                                        {option.toUpperCase()}
-                                      </span>
-
-                                      <span
-                                        className={`min-w-0 break-words text-sm leading-6 ${
-                                          isCorrect
-                                            ? "font-semibold text-emerald-700"
-                                            : "text-slate-600"
-                                        }`}
-                                      >
-                                        {answerText}
-                                      </span>
-
-                                      {isCorrect && (
-                                        <span className="ml-auto shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
-                                          Benar
+                                        <span
+                                          className={`flex size-7 shrink-0 items-center justify-center rounded-md text-xs font-bold ${
+                                            isCorrect
+                                              ? "bg-emerald-500 text-white"
+                                              : "bg-slate-100 text-slate-500"
+                                          }`}
+                                        >
+                                          {option.toUpperCase()}
                                         </span>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
 
-                            {/* Essay */}
-                            {viewQuestions.tipeUjian === "essay" && (
-                              <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 p-3">
-                                <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
-                                  Tipe Jawaban
-                                </p>
+                                        <span
+                                          className={`min-w-0 break-words text-sm leading-6 ${
+                                            isCorrect
+                                              ? "font-semibold text-emerald-700"
+                                              : "text-slate-600"
+                                          }`}
+                                        >
+                                          {answerText}
+                                        </span>
 
-                                <p className="mt-1 text-sm font-medium text-slate-600">
-                                  Peserta memberikan jawaban dalam bentuk essay.
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
+                                        {isCorrect && (
+                                          <span className="ml-auto shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+                                            Benar
+                                          </span>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
 
-                        {/* Actions */}
-                        <TableCell>
-                          <div className="flex flex-col gap-3">
-                            {/* Edit */}
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() =>
-                                getDataBeforeUpdate(
-                                  viewQuestions.tipeUjian,
-                                  data,
-                                )
-                              }
-                            >
-                              <PenLine className="size-5" />
-                            </Button>
+                              {/* Essay */}
+                              {viewQuestions.tipeUjian === "essay" && (
+                                <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50 p-3">
+                                  <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">
+                                    Tipe Jawaban
+                                  </p>
 
-                            {/* Delete */}
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button
-                                  type="button"
-                                  variant="destructive"
-                                  className="h-10 w-full rounded-xl border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 hover:text-red-700"
-                                >
-                                  <Trash2 className="size-5" />
-                                </Button>
-                              </DialogTrigger>
+                                  <p className="mt-1 text-sm font-medium text-slate-600">
+                                    Peserta memberikan jawaban dalam bentuk
+                                    essay.
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
 
-                              <DialogContent className="w-[calc(100%-2rem)] rounded-2xl sm:max-w-md">
-                                <DialogHeader>
-                                  <DialogTitle className="text-xl font-bold">
-                                    Hapus Soal
-                                  </DialogTitle>
+                          {/* Actions */}
+                          <TableCell>
+                            <div className="flex flex-col gap-3">
+                              {/* Edit */}
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() =>
+                                  getDataBeforeUpdate(
+                                    viewQuestions?.tipeUjian as "pg" | "essay",
+                                    data,
+                                  )
+                                }
+                              >
+                                <PenLine className="size-5" />
+                              </Button>
 
-                                  <DialogDescription className="pt-2 leading-6">
-                                    Apakah Anda yakin ingin menghapus soal:
-                                    <span className="mt-2 block font-bold text-slate-900">
-                                      "{data.questions}"
-                                    </span>
-                                    <span className="mt-2 block">
-                                      Tindakan ini tidak dapat dibatalkan.
-                                    </span>
-                                  </DialogDescription>
-                                </DialogHeader>
-
-                                <DialogFooter className="mt-4 gap-2">
-                                  <DialogClose asChild>
-                                    <Button
-                                      variant="outline"
-                                      className="rounded-xl"
-                                    >
-                                      Batal
-                                    </Button>
-                                  </DialogClose>
-
-                                  <DialogClose asChild>
-                                    <Button
-                                      variant="destructive"
-                                      className="rounded-xl bg-red-600 hover:bg-red-700"
-                                      onClick={() =>
-                                        handleDeleteQuestions(data.id)
-                                      }
-                                    >
-                                      Hapus Soal
-                                    </Button>
-                                  </DialogClose>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                              {/* Delete */}
+                              <Button
+                                type="button"
+                                onClick={() => getDataBeforeDelete(data.id)}
+                                variant="destructive"
+                                className="h-10 w-full rounded-xl border-red-200 bg-red-50 text-sm font-semibold text-red-600 hover:bg-red-100 hover:text-red-700"
+                              >
+                                <Trash2 className="size-5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ),
+                    )
                   ) : (
                     <TableRow>
                       <TableCell colSpan={3} className="h-40 text-center">
@@ -520,7 +551,16 @@ export default function ManageExamComponent() {
             </div>
 
             {/* ================= MANAGE EXAM ================= */}
-            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+            {/* edit exam */}
+            <Dialog
+              open={openDialog.editExam}
+              onOpenChange={(open) =>
+                setOpenDialog((prev) => ({
+                  ...prev,
+                  editExam: open,
+                }))
+              }
+            >
               <form
                 className="space-y-5"
                 onSubmit={handleSubmit(onSubmit)}
@@ -561,7 +601,7 @@ export default function ManageExamComponent() {
                     </div>
 
                     {/* PG */}
-                    {viewQuestions.tipeUjian === "pg" && (
+                    {viewQuestions?.tipeUjian === "pg" && (
                       <>
                         <div>
                           <h3 className="mb-3 text-sm font-semibold text-slate-700">
@@ -690,8 +730,52 @@ export default function ManageExamComponent() {
               </form>
             </Dialog>
 
+            {/* delete exam */}
+            <Dialog
+              open={openDialog.deleteExam}
+              onOpenChange={(open) =>
+                setOpenDialog((prev) => ({
+                  ...prev,
+                  deleteExam: open,
+                }))
+              }
+            >
+              <DialogContent className="w-[calc(100%-2rem)] rounded-2xl sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-bold">
+                    Hapus Soal
+                  </DialogTitle>
+
+                  <DialogDescription className="pt-2 leading-6">
+                    Apakah Anda yakin ingin menghapus soal ini ?
+                    <span className="mt-2 block">
+                      Tindakan ini tidak dapat dibatalkan.
+                    </span>
+                  </DialogDescription>
+                </DialogHeader>
+
+                <DialogFooter className="mt-4 gap-2">
+                  <DialogClose asChild>
+                    <Button variant="outline" className="rounded-xl">
+                      Batal
+                    </Button>
+                  </DialogClose>
+
+                  <DialogClose asChild>
+                    <Button
+                      variant="destructive"
+                      className="rounded-xl bg-red-600 hover:bg-red-700"
+                      onClick={() => handleDeleteQuestion(selectedQuestion)}
+                    >
+                      Hapus Soal
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             {/* Legend */}
-            {viewQuestions.tipeUjian === "pg" && (
+            {viewQuestions?.tipeUjian === "pg" && (
               <div className="border-t border-slate-200 bg-emerald-50/50 px-5 py-4 sm:px-6">
                 <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
                   <span className="size-3 rounded bg-emerald-500" />
