@@ -1,4 +1,6 @@
+"use client";
 import { useResultExamDataStudent } from "@/app/hooks/getDataResultStudent";
+import PaginationUi from "@/components/global/pagination/content";
 import {
   HoverCard,
   HoverCardContent,
@@ -15,10 +17,14 @@ import {
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { ClipboardList } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 export default function ManageStudent() {
   const idTeacher = useGetIdUsers((state) => state.idUser);
-  const dataStudentExams = useResultExamDataStudent(idTeacher);
+  const [page, setPage] = useState(1);
+  const { resultExamsStudent, totalData, isLoading, pageSize } =
+    useResultExamDataStudent(idTeacher, page);
+  const totalPages = Math.ceil(totalData / pageSize);
   return (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
       {/* ================= HEADER ================= */}
@@ -39,7 +45,7 @@ export default function ManageStudent() {
           </div>
 
           <div className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
-            {dataStudentExams.length} Siswa
+            {resultExamsStudent.length} Siswa
           </div>
         </div>
       </div>
@@ -76,8 +82,8 @@ export default function ManageStudent() {
           </TableHeader>
 
           <TableBody>
-            {dataStudentExams.length > 0 ? (
-              dataStudentExams.map((data: any, i: number) => (
+            {resultExamsStudent.length > 0 ? (
+              resultExamsStudent.map((data: any, i: number) => (
                 <TableRow
                   key={data.student_id ?? i}
                   className="align-top transition-colors hover:bg-slate-50"
@@ -253,6 +259,13 @@ export default function ManageStudent() {
             )}
           </TableBody>
         </Table>
+
+        <PaginationUi
+          currentPage={page}
+          totalPage={totalPages}
+          onPageChange={setPage}
+          isLoading={isLoading}
+        />
       </div>
     </div>
   );

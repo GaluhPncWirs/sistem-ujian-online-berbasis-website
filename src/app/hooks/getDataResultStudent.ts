@@ -17,116 +17,198 @@ type StudentExamResult = {
   classes: string | null;
 };
 
-export function useResultExamDataStudent(idTeacher: string | null) {
+const PAGE_SIZE = 5;
+
+export function useResultExamDataStudent(
+  idTeacher: string | null,
+  page: number,
+) {
   const [resultExamsStudent, setResultExamsStudent] = useState<
     StudentExamResult[]
   >([]);
 
+  const [totalData, setTotalData] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     if (!idTeacher) {
       setResultExamsStudent([]);
+      setTotalData(0);
+      setIsLoading(false);
       return;
     }
 
     let isMounted = true;
 
     async function getDataStudent() {
-      const [
-        { data: students, error: studentsError },
-        { data: historyStudents, error: historyStudentsError },
-      ] = await Promise.all([
-        supabase.from("account-student").select(`fullName, classes, idStudent`),
+      setIsLoading(true);
 
-        supabase
-          .from("history-exam-student")
-          .select(
-            `exam_id, student_id, hasil_ujian, status_exam, created_at, exams!inner (id, nama_ujian, tipeUjian, idTeacher)`,
-          )
-          .eq("exams.idTeacher", idTeacher),
-      ]);
+      try {
+        // =====================================================
+        // 1. Hitung pagination
+        // =====================================================
 
-      if (studentsError || historyStudentsError) {
-        console.error("Gagal mengambil data hasil ujian:", {
-          studentsError,
-          historyStudentsError,
+        const from = (page - 1) * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
+
+        // =====================================================
+        // 2. Ambil student berdasarkan pagination
+        // =====================================================
+
+        const {
+          data: students,
+          error: studentsError,
+          count,
+        } = await supabase
+          .from("account-student")
+          .select("fullName, classes, idStudent", {
+            count: "exact",
+          })
+          .order("fullName", {
+            ascending: true,
+          })
+          .range(from, to);
+
+        if (studentsError) {
+          console.error("students ERROR:", studentsError);
+
+          return;
+        }
+
+        if (!isMounted) return;
+
+        setTotalData(count ?? 0);
+
+        // Tidak ada student
+        if (!students?.length) {
+          setResultExamsStudent([]);
+          return;
+        }
+
+        // =====================================================
+        // 3. Ambil ID student pada halaman ini
+        // =====================================================
+
+        const studentIds = students
+          .map((student) => student.idStudent)
+          .filter(Boolean);
+
+        // =====================================================
+        // 4. Ambil history hanya untuk student tersebut
+        // =====================================================
+
+        const { data: historyStudents, error: historyStudentsError } =
+          await supabase
+            .from("history-exam-student")
+            .select(
+              `
+              exam_id,
+              student_id,
+              hasil_ujian,
+              status_exam,
+              created_at,
+              exams!inner (
+                id,
+                nama_ujian,
+                tipeUjian,
+                idTeacher
+              )
+            `,
+            )
+            .eq("exams.idTeacher", idTeacher)
+            .in("student_id", studentIds);
+
+        if (historyStudentsError) {
+          console.error("historyStudents ERROR:", historyStudentsError);
+
+          return;
+        }
+
+        if (!isMounted) return;
+
+        // =====================================================
+        // 5. Map student
+        // =====================================================
+
+        const studentMap = new Map(
+          students.map((student) => [
+            student.idStudent,
+            {
+              fullName: student.fullName,
+              classes: student.classes,
+            },
+          ]),
+        );
+
+        // =====================================================
+        // 6. Group history berdasarkan student
+        // =====================================================
+
+        const studentResultMap = new Map<string, StudentExamResult>();
+
+        // =====================================================
+        // 7. Inisialisasi semua student
+        //    termasuk student yang belum punya history
+        // =====================================================
+
+        students.forEach((student) => {
+          studentResultMap.set(student.idStudent, {
+            student_id: student.idStudent,
+            resultUjian: [],
+            created_at: [],
+            fullName: student.fullName ?? null,
+            classes: student.classes ?? null,
+          });
         });
 
-        return;
-      }
+        // =====================================================
+        // 8. Masukkan history ke student
+        // =====================================================
 
-      if (!isMounted) return;
+        (historyStudents ?? []).forEach((history) => {
+          const exam = Array.isArray(history.exams)
+            ? history.exams[0]
+            : history.exams;
 
-      // =========================================================
-      // Map data student agar lookup berdasarkan idStudent = O(1)
-      // =========================================================
+          if (!exam) return;
 
-      const studentMap = new Map(
-        (students ?? []).map((student) => [
-          student.idStudent,
-          {
-            fullName: student.fullName,
-            classes: student.classes,
-          },
-        ]),
-      );
+          const student = studentResultMap.get(history.student_id);
 
-      // =========================================================
-      // Group history berdasarkan student_id
-      // =========================================================
+          if (!student) return;
 
-      const studentResultMap = new Map<string, StudentExamResult>();
+          const examResult: ExamResult = {
+            namaUjian: exam.nama_ujian ?? null,
 
-      (historyStudents ?? []).forEach((history) => {
-        const exam = Array.isArray(history.exams)
-          ? history.exams[0]
-          : history.exams;
+            idUjian: history.exam_id,
 
-        if (!exam) return;
+            tipe_ujian: exam.tipeUjian ?? null,
 
-        const examResult: ExamResult = {
-          namaUjian: exam.nama_ujian ?? null,
-          idUjian: history.exam_id,
-          tipe_ujian: exam.tipeUjian ?? null,
-          hasil_ujian: history.hasil_ujian,
-          status_exam: history.status_exam,
-        };
+            hasil_ujian: history.hasil_ujian,
 
-        const existing = studentResultMap.get(history.student_id);
+            status_exam: history.status_exam,
+          };
 
-        if (existing) {
-          existing.resultUjian.push(examResult);
+          student.resultUjian.push(examResult);
 
           if (history.created_at) {
-            existing.created_at.push(history.created_at);
+            student.created_at.push(history.created_at);
           }
-        } else {
-          studentResultMap.set(history.student_id, {
-            student_id: history.student_id,
-            resultUjian: [examResult],
-            created_at: history.created_at ? [history.created_at] : [],
-            fullName: null,
-            classes: null,
-          });
+        });
+
+        // =====================================================
+        // 9. Convert Map → Array
+        // =====================================================
+
+        const mergedData = Array.from(studentResultMap.values());
+
+        setResultExamsStudent(mergedData);
+      } catch (error) {
+        console.error("Gagal mengambil data hasil ujian:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
         }
-      });
-
-      // =========================================================
-      // Gabungkan history dengan data student
-      // =========================================================
-
-      const mergedData = Array.from(studentResultMap.values()).map(
-        (student) => {
-          const studentData = studentMap.get(student.student_id);
-
-          return {
-            ...student,
-            fullName: studentData?.fullName ?? null,
-            classes: studentData?.classes ?? null,
-          };
-        },
-      );
-
-      setResultExamsStudent(mergedData);
+      }
     }
 
     getDataStudent();
@@ -134,7 +216,12 @@ export function useResultExamDataStudent(idTeacher: string | null) {
     return () => {
       isMounted = false;
     };
-  }, [idTeacher]);
+  }, [idTeacher, page]);
 
-  return resultExamsStudent;
+  return {
+    resultExamsStudent,
+    totalData,
+    isLoading,
+    pageSize: PAGE_SIZE,
+  };
 }

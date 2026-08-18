@@ -12,27 +12,30 @@ export default function HeaderDasboard(props: propsHeaderDahboard) {
   const { user, fullName, exams } = props;
   const pathName = usePathname();
   function informExams() {
+    const examList = Array.isArray(exams) ? exams : [];
+
     if (pathName === "/Student/Dashboard") {
-      const filterSisaUjian = exams.filter(
+      const filterSisaUjian = examList.filter(
         (done: any) => done.status_exam !== true,
       );
+
       return (
         <HeaderDashboard
           remainder={filterSisaUjian}
           isLocationPage={pathName}
         />
       );
-    } else {
-      const filterNilaiSiswa = exams
-        .flatMap((fm: any) => fm.resultUjian)
-        .filter((fil: any) => fil.hasil_ujian === "pending");
-      return (
-        <HeaderDashboard
-          remainder={filterNilaiSiswa}
-          isLocationPage={pathName}
-        />
-      );
     }
+
+    const filterNilaiSiswa = examList
+      .flatMap((exam: any) =>
+        Array.isArray(exam.resultUjian) ? exam.resultUjian : [],
+      )
+      .filter((result: any) => result.hasil_ujian === "pending");
+
+    return (
+      <HeaderDashboard remainder={filterNilaiSiswa} isLocationPage={pathName} />
+    );
   }
 
   return (

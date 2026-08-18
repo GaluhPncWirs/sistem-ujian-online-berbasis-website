@@ -29,7 +29,6 @@ import { DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import HeaderDasboard from "@/components/local/forDasboard/content";
-import { useDataExams } from "@/app/hooks/getScheduleExam";
 import { toast } from "sonner";
 import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { useGetDataUsers } from "@/store/useGetDataUsers/state";
@@ -37,6 +36,7 @@ import MainContent from "@/layout/mainContent/content";
 import { BarChart3, BellRing, CalendarClock } from "lucide-react";
 import { getExamStatus } from "@/lib/utils/statusExam";
 import { getUpComingExam } from "@/app/hooks/getUpComingExam";
+import { useDataExams } from "@/app/hooks/getScheduleExam";
 
 export default function DashboardStudent() {
   const getIdStudent = useGetIdUsers((state) => state.idUser);
