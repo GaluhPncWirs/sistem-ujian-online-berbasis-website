@@ -54,6 +54,7 @@
         "menambahkan fitur pagination di halaman kelola ujian",
         "memperbaiki error pada component header dashboard",
         "menambahkan fitur pagination pada halaman nilai siswa dan juga memperbaiki code ui di halaman koreksi jawaban essay siswa",
-        "merefaktor code untuk mengkoreksi nilai ujian essay di halaman koreksi ujian essay"
+        "merefaktor code untuk mengkoreksi nilai ujian essay di halaman koreksi ujian essay",
+        "memperbaiki bug dialog content muncul sekaligus dua dan memperbaiki agar tidak error saat menghapus data ujian di halaman kelola ujian"
     ]
 }

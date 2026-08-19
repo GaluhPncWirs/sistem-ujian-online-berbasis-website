@@ -11,6 +11,7 @@ type propsHeaderDahboard = {
 export default function HeaderDasboard(props: propsHeaderDahboard) {
   const { user, fullName, exams } = props;
   const pathName = usePathname();
+
   function informExams() {
     const examList = Array.isArray(exams) ? exams : [];
 

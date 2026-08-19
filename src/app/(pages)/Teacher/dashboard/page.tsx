@@ -21,6 +21,8 @@ import { useManageDataExams } from "@/app/hooks/getManageDataExams";
 import { useResultExamDataStudent } from "@/app/hooks/getDataResultStudent";
 import PaginationUi from "@/components/global/pagination/content";
 import { useGetStatistics } from "@/app/hooks/getManageExamStatistik";
+import { usePendingExamResultsStudent } from "@/app/hooks/getExamResultStudent";
+import { getExamStatus } from "@/lib/utils/statusExam";
 
 export default function Teacher() {
   const [dashboardButton, setDashboardButton] = useState({
@@ -40,10 +42,8 @@ export default function Teacher() {
   }
   const getidTeacher = useGetIdUsers((state) => state.idUser);
   const dataUserTeacher = useGetDataUsers((state) => state.dataUsers);
-  // const dataStudentExams = useResultExamDataStudent(getidTeacher);
+  const pendingExamResults = usePendingExamResultsStudent(getidTeacher);
   const { averageValueExam, jumlahSiswa } = useGetStatistics(getidTeacher);
-
-  // pagination
   const [page, setPage] = useState(1);
   const { dataManageExams, totalData, isLoading, pageSize } =
     useManageDataExams(getidTeacher, page);
@@ -55,7 +55,7 @@ export default function Teacher() {
         <HeaderDasboard
           user="Pengajar"
           fullName={dataUserTeacher?.fullName ?? ""}
-          // exams={dataStudentExams}
+          exams={pendingExamResults}
         />
         <div className="space-y-8">
           {/* ================= SUMMARY ================= */}
@@ -231,9 +231,31 @@ export default function Teacher() {
                         </TableRow>
                       ) : dataManageExams.length > 0 ? (
                         dataManageExams.map((item: any, i: number) => {
+                          const examStatus = getExamStatus(
+                            item.tenggat_waktu,
+                            item.dibuat_tgl,
+                          );
+
+                          const totalStudents = item.lengthStudent?.length ?? 0;
+
+                          const completedStudents =
+                            item.lengthStudentCompleteExams?.length ?? 0;
+
+                          const isAllStudentsComplete =
+                            totalStudents > 0 &&
+                            completedStudents >= totalStudents;
+
                           const isComplete =
-                            item.lengthStudent.length ===
-                            item.lengthStudentCompleteExams?.length;
+                            examStatus === "LEWAT" || isAllStudentsComplete;
+
+                          const status =
+                            examStatus === "LEWAT"
+                              ? "Waktu Habis"
+                              : isAllStudentsComplete
+                                ? "Selesai"
+                                : "Belum Selesai";
+
+                          console.log(status);
 
                           return (
                             <TableRow

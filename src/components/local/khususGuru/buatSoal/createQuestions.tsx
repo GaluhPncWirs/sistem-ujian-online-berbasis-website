@@ -133,8 +133,6 @@ type ExamOption = (typeof examOptions)[number];
 export default function CreateNewQuestions() {
   const idTeacher = useGetIdUsers((state) => state.idUser);
   const dataNameExam = useDataNameExams(idTeacher);
-
-  console.log(dataNameExam);
   const [openDialog, setOpenDialog] = useState(false);
   const {
     control,
