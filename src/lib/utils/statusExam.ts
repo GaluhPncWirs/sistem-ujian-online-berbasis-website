@@ -59,6 +59,8 @@ export function getExamStatus(
   const examDate = parseIndonesianDate(tglUjian);
   const today = getTodayIndonesia();
 
+  const currentMinute = getCurrentTimeInMinutes();
+
   if (!examDate || Number.isNaN(start) || Number.isNaN(end)) {
     return "LEWAT";
   }
@@ -67,8 +69,6 @@ export function getExamStatus(
     examDate.year * 10000 + (examDate.month + 1) * 100 + examDate.day;
 
   const todayNumber = today.year * 10000 + (today.month + 1) * 100 + today.day;
-
-  const currentMinute = getCurrentTimeInMinutes();
 
   // Ujian di hari yang akan datang
   if (examDateNumber > todayNumber) {

@@ -23,6 +23,7 @@ import PaginationUi from "@/components/global/pagination/content";
 import { useGetStatistics } from "@/app/hooks/getManageExamStatistik";
 import { usePendingExamResultsStudent } from "@/app/hooks/getExamResultStudent";
 import { getExamStatus } from "@/lib/utils/statusExam";
+// import { getExamStatus } from "@/lib/utils/statusExam";
 
 export default function Teacher() {
   const [dashboardButton, setDashboardButton] = useState({
@@ -247,15 +248,6 @@ export default function Teacher() {
 
                           const isComplete =
                             examStatus === "LEWAT" || isAllStudentsComplete;
-
-                          const status =
-                            examStatus === "LEWAT"
-                              ? "Waktu Habis"
-                              : isAllStudentsComplete
-                                ? "Selesai"
-                                : "Belum Selesai";
-
-                          console.log(status);
 
                           return (
                             <TableRow

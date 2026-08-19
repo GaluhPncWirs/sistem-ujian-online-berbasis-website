@@ -34,9 +34,10 @@ import { useGetIdUsers } from "@/store/useGetIdUsers/state";
 import { useGetDataUsers } from "@/store/useGetDataUsers/state";
 import MainContent from "@/layout/mainContent/content";
 import { BarChart3, BellRing, CalendarClock } from "lucide-react";
-import { getExamStatus } from "@/lib/utils/statusExam";
+// import { getExamStatus } from "@/lib/utils/statusExam";
 import { getUpComingExam } from "@/app/hooks/getUpComingExam";
 import { useDataExams } from "@/app/hooks/getScheduleExam";
+import { getExamStatus } from "@/lib/utils/statusExam";
 
 export default function DashboardStudent() {
   const getIdStudent = useGetIdUsers((state) => state.idUser);
@@ -78,49 +79,49 @@ export default function DashboardStudent() {
       ? Math.round((totalScore / filterScoreExams.length) * 100) / 100
       : 0;
 
-  const lateExams = useCallback(
-    async (idUjian: number) => {
-      if (!getIdStudent) return;
+  // const lateExams = useCallback(
+  //   async (idUjian: number) => {
+  //     if (!getIdStudent) return;
 
-      const { data: existingExam, error: fetchError } = await supabase
-        .from("history-exam-student")
-        .select("id, hasil_ujian, status_exam")
-        .eq("student_id", getIdStudent)
-        .eq("exam_id", Number(idUjian))
-        .maybeSingle();
+  //     const { data: existingExam, error: fetchError } = await supabase
+  //       .from("history-exam-student")
+  //       .select("id, hasil_ujian, status_exam")
+  //       .eq("student_id", getIdStudent)
+  //       .eq("exam_id", Number(idUjian))
+  //       .maybeSingle();
 
-      if (fetchError) {
-        console.error("Gagal mengecek history ujian:", fetchError);
-        return;
-      }
+  //     if (fetchError) {
+  //       console.error("Gagal mengecek history ujian:", fetchError);
+  //       return;
+  //     }
 
-      if (existingExam) {
-        return;
-      }
+  //     if (existingExam) {
+  //       return;
+  //     }
 
-      const payload = {
-        created_at: new Date().toISOString(),
-        student_id: getIdStudent,
-        exam_id: Number(idUjian),
-        answer_student: null,
-        hasil_ujian: "telat",
-        status_exam: true,
-        kelas: dataStudent?.classes,
-      };
+  //     const payload = {
+  //       created_at: new Date().toISOString(),
+  //       student_id: getIdStudent,
+  //       exam_id: Number(idUjian),
+  //       answer_student: null,
+  //       hasil_ujian: "telat",
+  //       status_exam: true,
+  //       kelas: dataStudent?.classes,
+  //     };
 
-      const { error: insertError } = await supabase
-        .from("history-exam-student")
-        .insert(payload);
+  //     const { error: insertError } = await supabase
+  //       .from("history-exam-student")
+  //       .insert(payload);
 
-      if (insertError) {
-        toast("❌ Gagal Simpan Data", {
-          description: insertError.message,
-        });
-        return;
-      }
-    },
-    [scheduleExams],
-  );
+  //     if (insertError) {
+  //       toast("❌ Gagal Simpan Data", {
+  //         description: insertError.message,
+  //       });
+  //       return;
+  //     }
+  //   },
+  //   [scheduleExams],
+  // );
 
   useEffect(() => {
     if (!scheduleExams.length) {
@@ -144,15 +145,15 @@ export default function DashboardStudent() {
       return;
     }
 
-    async function saveLateExams() {
-      await Promise.all(
-        lateExamsList.map((exam: { idExams: number }) =>
-          lateExams(exam.idExams),
-        ),
-      );
-    }
+    // async function saveLateExams() {
+    //   await Promise.all(
+    //     lateExamsList.map((exam: { idExams: number }) =>
+    //       lateExams(exam.idExams),
+    //     ),
+    //   );
+    // }
 
-    saveLateExams();
+    // saveLateExams();
   }, [scheduleExams]);
 
   useEffect(() => {

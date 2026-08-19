@@ -71,7 +71,7 @@ export default function FooterComponent() {
 
             <nav className="mt-5 flex flex-col gap-3">
               <Link
-                href="/cara-pakai"
+                href="/HowToUse"
                 className="w-fit text-sm text-slate-500 transition-colors hover:text-blue-600"
               >
                 Cara Pakai
