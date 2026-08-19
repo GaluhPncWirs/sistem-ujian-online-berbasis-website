@@ -184,7 +184,10 @@ export default function ViewQuestions() {
     },
   });
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [openDialog, setOpenDialog] = useState({
+    sendExam: false,
+    deleteExam: false,
+  });
 
   useEffect(() => {
     if (!dataManageExams?.length) return;
@@ -221,7 +224,10 @@ export default function ViewQuestions() {
         });
       }
 
-      setOpenDialog(false);
+      setOpenDialog((prev) => ({
+        ...prev,
+        sendExam: false,
+      }));
       toast("Berhasil ✅", {
         description: "Soal Berhasil Dikirimkan",
       });
@@ -237,7 +243,10 @@ export default function ViewQuestions() {
       idExam,
       namaUjian,
     });
-    setOpenDialog(true);
+    setOpenDialog((prev) => ({
+      ...prev,
+      deleteExam: true,
+    }));
   }
 
   async function handleDeleteExam(idExam: string) {
@@ -249,12 +258,21 @@ export default function ViewQuestions() {
     }
 
     try {
-      const { error } = await supabase.from("exams").delete().eq("id", idExam);
+      const { error } = await supabase
+        .from("exams")
+        .update({
+          deleted_at: new Date().toISOString(),
+        })
+        .eq("id", idExam)
+        .is("deleted_at", null);
+
       if (error) {
         console.error("Delete exam error:", error);
+
         toast("Gagal ❌", {
           description: "Ujian gagal dihapus.",
         });
+
         return;
       }
 
@@ -573,7 +591,15 @@ export default function ViewQuestions() {
         </div>
 
         {/* ================= DIALOG ================= */}
-        <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <Dialog
+          open={openDialog.deleteExam}
+          onOpenChange={(open) =>
+            setOpenDialog((prev) => ({
+              ...prev,
+              deleteExam: open,
+            }))
+          }
+        >
           <DialogContent className="rounded-2xl sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-xl font-bold">
@@ -631,7 +657,15 @@ export default function ViewQuestions() {
             </p>
           </div>
 
-          <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+          <Dialog
+            open={openDialog.sendExam}
+            onOpenChange={(open) =>
+              setOpenDialog((prev) => ({
+                ...prev,
+                sendExam: open,
+              }))
+            }
+          >
             <DialogTrigger asChild>
               <Button
                 type="button"

@@ -30,6 +30,7 @@ export function useManageExams(getidTeacher: string, page: number) {
             count: "exact",
           })
           .eq("idTeacher", getidTeacher)
+          .is("deleted_at", null)
           .order("created_at_exams", {
             ascending: false,
           })
